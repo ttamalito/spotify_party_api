@@ -1,4 +1,4 @@
-use actix_web::{get, post, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
+use actix_web::{get, post, web::{self, Data}, App, HttpRequest, HttpResponse, HttpServer, Responder};
 // controller for the main page
 #[get("/")]
 async fn hello() -> impl Responder {
@@ -8,6 +8,11 @@ async fn hello() -> impl Responder {
 #[get("/response")]
 async fn foo(req: HttpRequest) -> impl Responder {
     // print the request
-    println!("{:?}", req);
-    HttpResponse::Ok().body("I saw your request")
+    println!("The path: {:?}", req.path());
+    println!("The Req method: {:?}", req.method());
+    println!("The HTTP version: {:?}", req.version());
+    println!("The headers: {:?}", req.headers());
+    println!("The app Config: {:?}", req.app_config());
+   // println!("The app data: {:?}", req.app_data::<Data<T>>());
+    HttpResponse::Ok().body("Te amo")
 }

@@ -3,6 +3,7 @@ mod controllers;
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use controllers::base_controller::{self, hello};
 use controllers::base_controller::*;
+use controllers::auth_controller::*;
 
 async fn dummy() -> impl Responder {
     HttpResponse::Ok().body("Hey!")
@@ -14,6 +15,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .service(hello)
             .service(foo)
+            .service(post_login) // /login (POST)
             .route("/hey", web::get().to(dummy))
     })
     .workers(1)
