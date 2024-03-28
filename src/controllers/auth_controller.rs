@@ -63,6 +63,7 @@ async fn post_signup(req: HttpRequest, form: web::Form<SignupData>) -> impl Resp
     let to_add = doc! {"email": email, "name": name, "password": password};
     // insert it
     let result = collection.insert_one(to_add, None).await.expect("Could not add a doc to users collection");
+    println!("{:?}", result);
 
     let inserted_id = bson::oid::ObjectId::to_hex(result.inserted_id.as_object_id().unwrap());
     let string_body = String::from("Thank you for signin up, this is your OBject Id:") + inserted_id.as_str();
