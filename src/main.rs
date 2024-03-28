@@ -1,7 +1,7 @@
 pub mod controllers;
 pub mod database_connection;
 pub mod application_data;
-
+pub mod utils;
 use actix_web::web::Data;
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use controllers::base_controller::{self, hello};
@@ -11,6 +11,8 @@ use controllers::auth_controller::*;
 use application_data::ApplicationData;
 
 use database_connection::{connect_to_db, DB};
+
+
 
 async fn dummy() -> impl Responder {
     HttpResponse::Ok().body("Hey!")
