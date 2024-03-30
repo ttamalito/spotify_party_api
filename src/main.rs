@@ -1,7 +1,9 @@
+// declare all the modules
 pub mod controllers;
 pub mod database_connection;
 pub mod application_data;
 pub mod utils;
+pub mod models;
 use actix_web::web::Data;
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use controllers::base_controller::{self, hello};

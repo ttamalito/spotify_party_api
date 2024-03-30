@@ -1,10 +1,10 @@
 use actix_web::{post, web::{self, Data}, HttpRequest, HttpResponse, Responder, http::{StatusCode}};
 use serde::Deserialize;
 
-use crate::application_data::ApplicationData;
+use crate::{application_data::ApplicationData, models::user_model::User};
 use crate::utils::collections_enum::Collections;
 use crate::utils::collections_enum::get_collection;
-
+use crate::models::user_model;
 
 // mongodb
 use mongodb::{bson::{doc, Document, to_document}, Collection};
@@ -75,6 +75,20 @@ async fn post_signup(req: HttpRequest, form: web::Form<SignupData>) -> impl Resp
     let name = form.name.as_str();
     let password = form.password.as_str();
 
+    // check if there is a user with that email already
+    let data_to_pass = req.app_data::<Data<ApplicationData>>();
+    if data_to_pass.is_none() {
+        return HttpResponse::Ok().status(StatusCode::from_u16(401).unwrap()).body("Could not access the database, sorry!");
+    }
+    let user = User::new(data_to_pass);
+
+    // check if there is a user with that email
+    let some = user.query_user_by_email(email).await;
+    if some.is_some() {
+        // there is someone with that email
+        return HttpResponse::Ok().status(StatusCode::from_u16(401).unwrap()).body("There is a user with that email already!");
+    }
+    
     // here we would need to hash the password
 
     // now write the data to the data base
