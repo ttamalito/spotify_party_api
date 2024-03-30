@@ -20,13 +20,42 @@ struct LoginData {
 }
 
 #[post("/login")]
-async fn post_login(form: web::Form<LoginData>) -> impl Responder {
-    println!("Email: {}", form.email);
-    println!("Password: {}", form.password);
+async fn post_login(req: HttpRequest, form: web::Form<LoginData>) -> impl Responder {
+    let email = form.email.as_str();
+    let password = form.password.as_str();
+
+    // access the database
+    let app_data = req.app_data::<Data<ApplicationData>>();
+    if app_data.is_none() {
+        // there is no application data
+        println!("{}", String::from("There is no application data in POST /login"));
+        return HttpResponse::Ok().insert_header(("Access-Control-Allow-Origin", "http://localhost:3000"))
+        .status(StatusCode::from_u16(401).unwrap())
+        .body("Something went wrong in our side.");
+    }
+    // get the collection
+    let collection: Collection<Document> = app_data.unwrap().as_ref().get_database().unwrap().collection(get_collection(Collections::USERS).as_str());
+    // now find the corresponding entry
+    let filter = doc! {"email": email};
+    println!("{}", email);
+    let result = collection.find_one(filter, None).await;
+    let what = result.as_ref();
+    let que = what.unwrap();
+    if result.is_ok() {
+        if (*que).is_some(){
+            // we have a result
+            println!("{}", result.as_ref().unwrap().as_ref().unwrap());
+            print!("{}", String::from("Putoooo"));
+        } else {
+            println!("{}", String::from("There is no document"));
+        }
+    } else {
+        println!("{}", String::from("There was an error trying to retrieve the results"))
+    }
     HttpResponse::Ok()
     .insert_header(("Access-Control-Allow-Origin", "http://localhost:3000"))
     .body("Thank You for login in")
-}
+} // end of post /login
 
 
 /*
@@ -48,7 +77,7 @@ async fn post_signup(req: HttpRequest, form: web::Form<SignupData>) -> impl Resp
 
     // here we would need to hash the password
 
-    // now write the data
+    // now write the data to the data base
     let app_data = req.app_data::<Data<ApplicationData>>();
 
     // check if it is empty
