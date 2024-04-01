@@ -5,6 +5,10 @@ use crate::{application_data::ApplicationData, models::user_model::User};
 use crate::utils::collections_enum::Collections;
 use crate::utils::collections_enum::get_collection;
 use crate::models::user_model;
+use hmac::{Hmac, Mac};
+use jwt::SignWithKey;
+use sha2::Sha256;
+use std::collections::BTreeMap;
 
 // mongodb
 use mongodb::{bson::{doc, Document, to_document}, Collection};
@@ -45,16 +49,23 @@ async fn post_login(req: HttpRequest, form: web::Form<LoginData>) -> impl Respon
         if (*que).is_some(){
             // we have a result
             println!("{}", result.as_ref().unwrap().as_ref().unwrap());
-            print!("{}", String::from("Putoooo"));
+            println!("{}", String::from("Putoooo"));
         } else {
             println!("{}", String::from("There is no document"));
         }
     } else {
         println!("{}", String::from("There was an error trying to retrieve the results"))
     }
+
+    // generate the token
+    let key: Hmac<Sha256> = Hmac::new_from_slice(b"secret").expect("could not generate secret key!");
+    let mut claims = BTreeMap::new();
+    claims.insert("sub", "someone");
+    let token_str = String::from("jwt=") + claims.sign_with_key(&key).expect("COuld not sign token").as_str();
     HttpResponse::Ok()
-    .insert_header(("Access-Control-Allow-Origin", "http://localhost:3000"))
-    .body("Thank You for login in")
+    //.insert_header(("login", token_str.as_str()))
+    .insert_header(("puto", "jaja"))
+    .body(token_str)
 } // end of post /login
 
 
@@ -88,7 +99,7 @@ async fn post_signup(req: HttpRequest, form: web::Form<SignupData>) -> impl Resp
         // there is someone with that email
         return HttpResponse::Ok().status(StatusCode::from_u16(401).unwrap()).body("There is a user with that email already!");
     }
-    
+
     // here we would need to hash the password
 
     // now write the data to the data base
