@@ -4,7 +4,7 @@ use serde::Deserialize;
 use crate::{application_data::ApplicationData, models::user_model::User};
 use crate::utils::collections_enum::Collections;
 use crate::utils::collections_enum::get_collection;
-use crate::models::user_model;
+use crate::models::user_model::{ UserDocument};
 use hmac::{Hmac, Mac};
 use jwt::SignWithKey;
 use sha2::Sha256;
@@ -43,6 +43,9 @@ async fn post_login(req: HttpRequest, form: web::Form<LoginData>) -> impl Respon
     let filter = doc! {"email": email};
     println!("{}", email);
     let result = collection.find_one(filter, None).await;
+    let serialized_doc = result.as_ref().unwrap();
+    let user_struct: UserDocument = bson::from_bson(bson::Bson::Document(serialized_doc.as_ref().unwrap().to_owned())).expect("Could not deserialize it");
+    println!("{:?}", user_struct);
     let what = result.as_ref();
     let que = what.unwrap();
     if result.is_ok() {
@@ -112,8 +115,18 @@ async fn post_signup(req: HttpRequest, form: web::Form<SignupData>) -> impl Resp
     // get the collection
     let collection: Collection<Document> = app_data.unwrap().as_ref().get_database().unwrap().collection(get_collection(Collections::USERS).as_str());
 
+    
     // create the data to add
-    let to_add = doc! {"email": email, "name": name, "password": password};
+    //let to_add = doc! {"email": email, "name": name, "password": password};
+    let to_add_doc = UserDocument {
+        email: email.to_owned(),
+        password: password.to_owned(),
+        name: name.to_owned(),
+        _id: None
+
+    };
+    let serialized_doc = bson::to_bson(&to_add_doc).expect("Could not serialize the document in sign up");
+    let to_add = serialized_doc.as_document().unwrap().to_owned();
     // insert it
     let result = collection.insert_one(to_add, None).await.expect("Could not add a doc to users collection");
     println!("{:?}", result);

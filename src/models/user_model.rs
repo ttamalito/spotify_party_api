@@ -1,5 +1,7 @@
 
 use actix_web::{web::Data};
+use mongodb::bson::oid::ObjectId;
+use serde::{Deserialize, Serialize};
 use crate::application_data::ApplicationData;
 use crate::utils::collections_enum::*;
 
@@ -37,4 +39,12 @@ impl User {
         let result = self.collection.find_one(filter, None).await.expect("Could not retrive user from database");
         result
     } // end of query user by email
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UserDocument {
+    pub email: String,
+    pub name: String,
+    pub password: String,
+    pub _id: Option<ObjectId>
 }
