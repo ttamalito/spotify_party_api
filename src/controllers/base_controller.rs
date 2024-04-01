@@ -18,7 +18,7 @@ async fn foo(req: HttpRequest) -> impl Responder {
     //println!("The path: {:?}", req.path());
     //println!("The Req method: {:?}", req.method());
     //println!("The HTTP version: {:?}", req.version());
-    //println!("The headers: {:?}", req.headers());
+    println!("The headers: {:?}", req.headers());
     //println!("The app Config: {:?}", req.app_config());
    // println!("The app data: {:?}", req.app_data::<Data<T>>());
    // access the data
@@ -32,11 +32,17 @@ async fn foo(req: HttpRequest) -> impl Responder {
    let database = data.get_database();
    if database.is_some() {
     // we have a database
-    let collection = database.unwrap().collection("tesing");
-    let to_insert =  doc! { "title": "PUTO", "author": "George Orwell" };
+    // let collection = database.unwrap().collection("tesing");
+    // let to_insert =  doc! { "title": "PUTO", "author": "George Orwell" };
     // Insert some documents into the "mydb.books" collection.
-    let result = collection.insert_one(to_insert, None).await.expect("Verga no funciono esta mierdaa!");
-    println!("{:?}", result);
+    //let result = collection.insert_one(to_insert, None).await.expect("Verga no funciono esta mierdaa!");
+    //println!("{:?}", result);
+   }
+   let header_map = req.headers();
+   let cookie_str = "Cookie";
+   let log_token = header_map.get(cookie_str);
+   if log_token.is_some() {
+    println!("{}", String::from("You have sent the cookie"));
    }
     HttpResponse::Ok().body("Te amo")
 }

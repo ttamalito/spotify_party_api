@@ -49,7 +49,7 @@ async fn post_login(req: HttpRequest, form: web::Form<LoginData>) -> impl Respon
         if (*que).is_some(){
             // we have a result
             println!("{}", result.as_ref().unwrap().as_ref().unwrap());
-            println!("{}", String::from("Putoooo"));
+        
         } else {
             println!("{}", String::from("There is no document"));
         }
@@ -64,7 +64,6 @@ async fn post_login(req: HttpRequest, form: web::Form<LoginData>) -> impl Respon
     let token_str = String::from("jwt=") + claims.sign_with_key(&key).expect("COuld not sign token").as_str();
     HttpResponse::Ok()
     //.insert_header(("login", token_str.as_str()))
-    .insert_header(("puto", "jaja"))
     .body(token_str)
 } // end of post /login
 

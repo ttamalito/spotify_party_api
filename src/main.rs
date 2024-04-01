@@ -29,6 +29,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .wrap(middleware::DefaultHeaders::new().add(("Access-Control-Allow-Origin", "http://localhost:3000"))) // add a middleware to add the default header
+            .wrap(middleware::DefaultHeaders::new().add(("Access-Control-Allow-Credentials", "true")))
             .app_data(data.clone())
             .service(hello)
             .service(foo)
