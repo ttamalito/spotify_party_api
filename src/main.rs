@@ -9,7 +9,7 @@ use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder, middle
 use controllers::base_controller::{self, hello};
 use controllers::base_controller::*;
 use controllers::auth_controller::*;
-
+use controllers::party_controller::*;
 use application_data::ApplicationData;
 
 use database_connection::{connect_to_db, DB};
@@ -33,8 +33,10 @@ async fn main() -> std::io::Result<()> {
             .app_data(data.clone())
             .service(hello)
             .service(foo)
+            .service(start_party) // /party (GET)
             .service(post_login) // /login (POST)
             .service(post_signup) // /signup (POST)
+
             .route("/hey", web::get().to(dummy))
     })
     .workers(4)
