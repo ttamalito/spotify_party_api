@@ -33,10 +33,11 @@ async fn main() -> std::io::Result<()> {
             .app_data(data.clone())
             .service(hello)
             .service(foo)
-            .service(start_party) // /party (GET)
+            
             .service(post_login) // /login (POST)
             .service(post_signup) // /signup (POST)
-
+            .service(start_party) // /party (GET)
+            .service(start_party_two)
             .route("/hey", web::get().to(dummy))
     })
     .workers(4)
