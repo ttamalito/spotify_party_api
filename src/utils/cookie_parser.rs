@@ -1,9 +1,9 @@
-
+use std::collections::HashMap;
 ///
 /// Struct to Represent a Cookie
 #[derive(Debug)]
 pub struct MyCookie {
-    pub key: String,
+    key: String,
     value: String
 }
 
@@ -21,12 +21,21 @@ impl MyCookie {
     pub fn get_value_as_ref(&self) -> &String {
         &self.value
     }
+
+    pub fn get_key_as_ref(&self) -> &String {
+        &self.key
+    } // end of getter
+
+    pub fn get_key_as_str(&self) -> &str {
+        self.key.as_str()
+    }
 }
 
 
 
-pub fn parse_cookies(value:&str) -> Vec<MyCookie> {
-    let mut result: Vec<MyCookie> = Vec::new();
+pub fn parse_cookies(value:&str) -> HashMap<String, MyCookie> {
+    //let mut result: Vec<MyCookie> = Vec::new();
+    let mut result: HashMap<String, MyCookie> = HashMap::new();
     // get the length
     let len = value.len() - 1;
     println!("{}", len);
@@ -47,7 +56,8 @@ pub fn parse_cookies(value:&str) -> Vec<MyCookie> {
             //let str_key: &str = key_clone.as_str();
             let value_clone = value_cookie.clone();            
             let cookie = MyCookie::new(key_clone, value_clone);
-            result.push(cookie);
+            let key_str = key_cookie.clone();
+            result.insert(key_str, cookie);
             key_cookie.clear();
             value_cookie.clear();
             continue;
@@ -58,9 +68,10 @@ pub fn parse_cookies(value:&str) -> Vec<MyCookie> {
             value_cookie.push(c);
             let key_clone = key_cookie.clone();
             //let str_key = key_cookie.clone().as_str();
-            let value_clone = value_cookie.clone();            
+            let value_clone = value_cookie.clone(); 
+            let key_str = key_clone.clone();        
             let cookie = MyCookie::new(key_clone, value_clone);
-            result.push(cookie);
+            result.insert(key_str, cookie);
             key_cookie.clear();
             value_cookie.clear();
             continue;

@@ -36,13 +36,14 @@ async fn start_party_two(req: HttpRequest) -> impl Responder {
         //println!("{:?}", header_str);
         // create an iterator
         let cookies = parse_cookies(header_str);
-        for cookie in cookies {
+        /*
+                for cookie in cookies {
             println!("{}", String::from("Key"));
-            println!("{}", &cookie.key);
+            println!("{}", cookie.get_key_as_ref());
             println!("{}", String::from("Value"));
             let value = cookie.get_value_as_ref();
             println!("{}", value);
-        }
+        } */
     }
     println!("{}", String::from("Que putas esta pasando!?"));
     // check if there is a token
