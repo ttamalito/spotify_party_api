@@ -5,6 +5,12 @@ use hmac::{Hmac, Mac};
 use jwt::VerifyWithKey;
 use sha2::Sha256;
 use std::collections::BTreeMap;
+use serde::Serialize;
+
+#[derive(Serialize)]
+struct JsonResponse {
+    link: String
+}
 
 #[get("/puto")]
 async fn start_party(req: HttpRequest) -> impl Responder {
@@ -30,7 +36,7 @@ async fn start_party(req: HttpRequest) -> impl Responder {
 #[get("/createParty")]
 async fn start_party_two(req: HttpRequest) -> impl Responder {
     let header_map = req.headers();
-    println!("{:?}", header_map);
+    //println!("{:?}", header_map);
     let cookie_str = "Cookie";
     let log_token = header_map.get(cookie_str);
     if log_token.is_some() {
@@ -58,10 +64,17 @@ async fn start_party_two(req: HttpRequest) -> impl Responder {
             let claims: BTreeMap<String, String> = token.verify_with_key(&key).expect("Should verify key");
             //assert_eq!(claims["sub"], "someone");
             println!("{:?}", claims);
+        } else {
+            // there is no jwt
+            println!("{}", String::from("About to redirect because no jwt cookie"));
+            return HttpResponse::Ok().json(JsonResponse {link: String::from("http://localhost:3000/login")});
         }
-    } // end of IF there are cookies
-
-    println!("{}", String::from("Que putas esta pasando!?"));
+    } // end of IF there are cookies 
+    else {
+        // there are no cookies
+        println!("{}", String::from("About to redirect because no cookie header"));
+        return HttpResponse::Ok().json(JsonResponse {link: String::from("http://localhost:3000/login")});
+    }
     // check if there is a token
     /*
         if log_token.is_some() {
