@@ -1,16 +1,25 @@
 
-
+///
+/// Struct to Represent a Cookie
+#[derive(Debug)]
 pub struct MyCookie {
-    key: String,
+    pub key: String,
     value: String
 }
 
+/// Implementation block of static functions
 impl MyCookie {
     fn new(key: String, value: String) -> MyCookie {
         MyCookie {
             key: key,
             value: value
         }
+    } // end of new
+}
+
+impl MyCookie {
+    pub fn get_value_as_ref(&self) -> &String {
+        &self.value
     }
 }
 
@@ -26,13 +35,14 @@ pub fn parse_cookies(value:&str) -> Vec<MyCookie> {
     let mut found_equal = false;
     // iterate through all the chars
     for (index, c) in value.char_indices() {
-        //println!("{} {} {} {}", String::from("index"), index, String::from("char"), c);
+        println!("{} {} {} {}", String::from("index"), index, String::from("char"), c);
         // chekc if it is the space
         if c == ' ' {
             continue;
         }
         // check if it is the end of a key value pair
         if c == ';' {
+            found_equal = false; // so that it starts from the key
             let key_clone = key_cookie.clone();
             //let str_key: &str = key_clone.as_str();
             let value_clone = value_cookie.clone();            

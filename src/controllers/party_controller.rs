@@ -31,11 +31,18 @@ async fn start_party_two(req: HttpRequest) -> impl Responder {
     let log_token = header_map.get(cookie_str);
     if log_token.is_some() {
         let header_value: &HeaderValue = log_token.unwrap();
-        println!("{:?}", header_value);
+        //println!("{:?}", header_value);
         let header_str = header_value.to_str().unwrap();
-        println!("{:?}", header_str);
+        //println!("{:?}", header_str);
         // create an iterator
-        parse_cookies(header_str);
+        let cookies = parse_cookies(header_str);
+        for cookie in cookies {
+            println!("{}", String::from("Key"));
+            println!("{}", &cookie.key);
+            println!("{}", String::from("Value"));
+            let value = cookie.get_value_as_ref();
+            println!("{}", value);
+        }
     }
     println!("{}", String::from("Que putas esta pasando!?"));
     // check if there is a token
