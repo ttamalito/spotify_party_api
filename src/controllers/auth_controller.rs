@@ -63,7 +63,7 @@ async fn post_login(req: HttpRequest, form: web::Form<LoginData>) -> impl Respon
     // generate the token
     let key: Hmac<Sha256> = Hmac::new_from_slice(b"secret").expect("could not generate secret key!");
     let mut claims = BTreeMap::new();
-    claims.insert("sub", "someone");
+    claims.insert("sub", "user-id!!!");
     let token_str = String::from("jwt=") + claims.sign_with_key(&key).expect("COuld not sign token").as_str();
     HttpResponse::Ok()
     //.insert_header(("login", token_str.as_str()))

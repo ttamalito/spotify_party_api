@@ -1,6 +1,10 @@
 use actix_web::{get, http::{header::HeaderValue, StatusCode}, web::Redirect, HttpRequest, HttpResponse, Responder};
+use jwt::Store;
 use crate::utils::cookie_parser::parse_cookies;
-
+use hmac::{Hmac, Mac};
+use jwt::VerifyWithKey;
+use sha2::Sha256;
+use std::collections::BTreeMap;
 
 #[get("/puto")]
 async fn start_party(req: HttpRequest) -> impl Responder {
@@ -44,7 +48,19 @@ async fn start_party_two(req: HttpRequest) -> impl Responder {
             let value = cookie.get_value_as_ref();
             println!("{}", value);
         } */
-    }
+        // check that the jwt cookie is present
+        if cookies.contains_key("jwt") {
+            // there is a token
+            let token = cookies.get("jwt").unwrap().get_value_as_ref();
+
+            let key: Hmac<Sha256> = Hmac::new_from_slice(b"secret").expect("Should generate the key");
+            //let token_str = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzb21lb25lIn0.5wwE1sBrs-vftww_BGIuTVDeHtc1Jsjo-fiHhDwR8m0";
+            let claims: BTreeMap<String, String> = token.verify_with_key(&key).expect("Should verify key");
+            //assert_eq!(claims["sub"], "someone");
+            println!("{:?}", claims);
+        }
+    } // end of IF there are cookies
+
     println!("{}", String::from("Que putas esta pasando!?"));
     // check if there is a token
     /*
