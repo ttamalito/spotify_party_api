@@ -44,7 +44,7 @@ pub fn parse_cookies(value:&str) -> HashMap<String, MyCookie> {
     let mut found_equal = false;
     // iterate through all the chars
     for (index, c) in value.char_indices() {
-        println!("{} {} {} {}", String::from("index"), index, String::from("char"), c);
+        //println!("{} {} {} {}", String::from("index"), index, String::from("char"), c);
         // chekc if it is the space
         if c == ' ' {
             continue;

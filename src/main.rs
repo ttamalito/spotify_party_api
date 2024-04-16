@@ -38,6 +38,7 @@ async fn main() -> std::io::Result<()> {
             .service(post_signup) // /signup (POST)
             .service(start_party) // /party (GET)
             .service(start_party_two)
+            .service(request_token)
             .route("/hey", web::get().to(dummy))
     })
     .workers(4)
