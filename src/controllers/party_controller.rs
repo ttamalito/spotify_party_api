@@ -15,6 +15,7 @@ use crate::models::party_model::*;
 use crate::models::user_model::*;
 use crate::application_data::*;
 use mongodb::bson::oid::ObjectId;
+use base64::prelude::*;
 
 #[get("/puto")]
 async fn start_party(req: HttpRequest) -> impl Responder {
@@ -54,7 +55,10 @@ async fn start_party_two(req: HttpRequest) -> impl Responder {
 #[derive(Serialize, Deserialize)]
 struct CreatePartyData {
     id: String,
-    secret: String
+    secret: String,
+    code: String,
+    grant_type: String,
+    redirect_uri: String
 } // end of CreatePartyData
 
 
@@ -110,16 +114,24 @@ async fn request_token(req: HttpRequest, form: web::Form<CreatePartyData>) -> im
         return HttpResponse::Forbidden().json(JsonResponse::new(false, false, String::from("")));
     }
     // the user is logged in and doesn't have a party, send the request to get the access token
+    let to_concat = format!("{}{}{}{}", "code=", form.code, "&grant_type=", form.grant_type);
+    let req_body = format!("{}{}{}", to_concat, "&redirect_uri=", form.redirect_uri);
+    println!("{}", &req_body);
+    let authorization_header = format!("{}{}{}", form.id, ":", form.secret);
+    println!("{}", &authorization_header);
+    let base64_authorization_header = format!("{}{}", "Basic ", BASE64_STANDARD.encode(authorization_header));
+    // send the request
     let builder = SslConnector::builder(SslMethod::tls()).unwrap();
 
     let client = Client::builder()
         .connector(Connector::new().openssl(builder.build()).timeout(Duration::from_secs(10)))
         .finish();
-    let to_concat = "grant_type=client_credentials&client_id=";
-    let req_body = format!("{}{}{}{}", to_concat, form.id, "&client_secret=", form.secret );
+
     //println!("{}", req_body);
     let mut response = client.post("https://accounts.spotify.com/api/token").timeout(Duration::from_secs(10)).
-    insert_header(("Content-Type", "application/x-www-form-urlencoded")).send_body(req_body).await.unwrap();
+    insert_header(("Content-Type", "application/x-www-form-urlencoded"))
+    .insert_header(("Authorization", base64_authorization_header))
+    .send_body(req_body).await.unwrap();
     //response.timeout(Duration::from_secs(10));
     println!("{:?}", response.version());
     println!("{:?}", response.status());

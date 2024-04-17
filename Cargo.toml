@@ -16,3 +16,5 @@ hmac = "0.12.1"
 sha2 = "0.10.8"
 awc = {version="3.4.0", features = ["openssl"]}
 openssl = "0.10.64"
+serde_urlencoded = "0.7"
+base64 = "0.22.0"
