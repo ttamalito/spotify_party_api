@@ -56,7 +56,7 @@ impl PartyCollection {
     }
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Party {
     pub _id: Option<ObjectId>,
     pub members: Vec<ObjectId>,
@@ -64,7 +64,7 @@ pub struct Party {
     pub access_token: PartyAccessToken
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct PartyAccessToken {
     access_token: String,
     token_type: String,

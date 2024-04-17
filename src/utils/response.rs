@@ -1,3 +1,5 @@
+use actix_web::web::to;
+use jwt::token;
 use serde::Serialize;
 
 /// Struct to Represent a simple respose from the api
@@ -41,4 +43,31 @@ impl JsonResponse {
     pub fn get_url(&self) -> String {
         self.url.clone()
     }
+}
+
+#[derive(Serialize)]
+pub struct JsonResponseForSigningUp {
+    result: bool,
+    redirected: bool,
+    url: String,
+    token: String,
+    id: String
+}
+
+
+impl JsonResponseForSigningUp {
+    pub fn new(result: bool, redirected: bool, url: String, token: String, id: String) -> Self {
+        JsonResponseForSigningUp {
+            result,
+            redirected, 
+            url,
+            token,
+            id 
+        }
+    } // end of new
+
+    pub fn redirect_to_login(token: String, id: String) -> Self {
+        JsonResponseForSigningUp::new(true, true, String::from("http://localhost:3000/login"), token, id)
+    }
+    
 }

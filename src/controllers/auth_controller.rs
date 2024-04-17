@@ -5,6 +5,9 @@ use crate::{application_data::ApplicationData, models::user_model::User};
 use crate::utils::collections_enum::Collections;
 use crate::utils::collections_enum::get_collection;
 use crate::models::user_model::{ UserDocument};
+use crate::utils::response::*;
+
+
 use hmac::{Hmac, Mac};
 use jwt::SignWithKey;
 use sha2::Sha256;
@@ -45,7 +48,7 @@ async fn post_login(req: HttpRequest, form: web::Form<LoginData>) -> impl Respon
     let result = collection.find_one(filter, None).await;
     let serialized_doc = result.as_ref().unwrap();
     let user_struct: UserDocument = bson::from_bson(bson::Bson::Document(serialized_doc.as_ref().unwrap().to_owned())).expect("Could not deserialize it");
-    println!("{:?}", user_struct);
+    println!("{:?}", &user_struct);
     let what = result.as_ref();
     let que = what.unwrap();
     if result.is_ok() {
@@ -64,6 +67,8 @@ async fn post_login(req: HttpRequest, form: web::Form<LoginData>) -> impl Respon
     let key: Hmac<Sha256> = Hmac::new_from_slice(b"secret").expect("could not generate secret key!");
     let mut claims = BTreeMap::new();
     claims.insert("sub", "user-id!!!");
+    let user_id = user_struct._id.unwrap().to_string();
+    claims.insert("id", user_id.as_str());
     let token_str = String::from("jwt=") + claims.sign_with_key(&key).expect("COuld not sign token").as_str();
     HttpResponse::Ok()
     //.insert_header(("login", token_str.as_str()))
@@ -134,8 +139,9 @@ async fn post_signup(req: HttpRequest, form: web::Form<SignupData>) -> impl Resp
 
     let inserted_id = bson::oid::ObjectId::to_hex(result.inserted_id.as_object_id().unwrap());
     let string_body = String::from("Thank you for signin up, this is your OBject Id:") + inserted_id.as_str();
-    // send the response
+    // send the response, with the proper json
+    let response = JsonResponseForSigningUp::redirect_to_login(String::from("jdjd"), inserted_id);
     HttpResponse::Ok()
     .insert_header(("Access-Control-Allow-Origin", "http://localhost:3000"))
-    .body(string_body)
+    .json(response)
 }

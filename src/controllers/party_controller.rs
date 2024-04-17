@@ -115,5 +115,7 @@ async fn request_token(req: HttpRequest, form: web::Form<CreatePartyData>) -> im
     println!("{}", payload.expires_in);
     //println!("{}", form.id);
     //println!("{}", form.secret);
+    // create a party and save it to the data base
+    // TODO
     HttpResponse::Ok().json(JsonResponseForWithAccessToken::new(JsonResponse::simple_response(), payload))
 }
