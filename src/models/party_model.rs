@@ -59,7 +59,8 @@ impl PartyCollection {
 /// Struct to represent a party
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Party {
-    pub _id: Option<ObjectId>,
+    #[serde(skip_serializing)]
+    pub _id: ObjectId,
     pub members: Vec<ObjectId>,
     pub owner: ObjectId,
     pub access_token: PartyAccessToken
@@ -80,7 +81,7 @@ impl Party {
         // convert the string to object id
         let object_id = ObjectId::parse_str(owner).expect("Should convert string to object id");
         Party {
-            _id: None,
+            _id: ObjectId::new(),
             members: vec![],
             owner: object_id,
             access_token: PartyAccessToken {access_token, token_type, expires_in}

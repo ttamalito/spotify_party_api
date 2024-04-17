@@ -60,6 +60,7 @@ pub struct UserDocument {
     pub email: String,
     pub name: String,
     pub password: String,
+    #[serde(skip_serializing)]
     pub _id: Option<ObjectId>,
     pub owned_party: Option<ObjectId>,
 }
