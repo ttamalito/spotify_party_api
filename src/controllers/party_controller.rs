@@ -4,7 +4,7 @@ use crate::utils::cookie_parser::parse_cookies;
 use hmac::{Hmac, Mac};
 use jwt::VerifyWithKey;
 use sha2::Sha256;
-use std::{collections::BTreeMap, time::Duration};
+use std::{collections::BTreeMap, str::FromStr, time::Duration};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use crate::utils::check_login::check_login;
@@ -74,18 +74,20 @@ struct JsonResponseForWithAccessToken {
     url: String,
     access_token: String,
     token_type: String,
-    expires_in: i32
+    expires_in: i32,
+    party_id: String
 }
 
 impl JsonResponseForWithAccessToken {
-    pub fn new(json: JsonResponse, token: AccessToken) -> Self {
+    pub fn new(json: JsonResponse, token: AccessToken, party_id: String) -> Self {
         JsonResponseForWithAccessToken {
             result: json.get_result(),
             redirected: json.get_redirected(),
             url: json.get_url(),
             access_token: token.access_token,
             token_type: token.token_type,
-            expires_in: token.expires_in
+            expires_in: token.expires_in,
+            party_id: party_id
         }
     }
 }
@@ -126,13 +128,16 @@ async fn request_token(req: HttpRequest, form: web::Form<CreatePartyData>) -> im
     let collection = PartyCollection::new(req.app_data::<Data<ApplicationData>>());
     // save it to the database
     let party_id = collection.save_party(party).await;
+
     // save it to the database
     let user_collection = User::new(req.app_data::<Data<ApplicationData>>());
     // convert the string to objectid
     let user_id = ObjectId::parse_str(user_id).unwrap();
     let all_good = user_collection.add_owned_party(user_id, party_id).await;
     if all_good {
-        return HttpResponse::Ok().json(JsonResponseForWithAccessToken::new(JsonResponse::simple_response(), payload));
+        // convert the party id to a string
+        let party_id = party_id.to_hex();
+        return HttpResponse::Ok().json(JsonResponseForWithAccessToken::new(JsonResponse::simple_response(), payload, party_id));
     }
 
     HttpResponse::InternalServerError().json(JsonResponse::new(false, false, String::from("")))
