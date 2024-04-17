@@ -56,6 +56,7 @@ impl PartyCollection {
     }
 }
 
+/// Struct to represent a party
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Party {
     pub _id: Option<ObjectId>,
@@ -64,9 +65,25 @@ pub struct Party {
     pub access_token: PartyAccessToken
 }
 
+/// Struct to represent an access token
 #[derive(Deserialize, Serialize, Debug)]
 pub struct PartyAccessToken {
     access_token: String,
     token_type: String,
     expires_in: i32
+}
+
+
+impl Party {
+    /// Constructor to create a completely new party (without ObjectId)
+    pub fn new(owner: String, access_token: String, token_type: String, expires_in: i32) -> Self {
+        // convert the string to object id
+        let object_id = ObjectId::parse_str(owner).expect("Should convert string to object id");
+        Party {
+            _id: None,
+            members: vec![],
+            owner: object_id,
+            access_token: PartyAccessToken {access_token, token_type, expires_in}
+        }
+    } // end of new
 }

@@ -1,4 +1,4 @@
-use actix_web::{get, http::{header::HeaderValue, StatusCode}, post, web::{self, Json, Redirect}, HttpRequest, HttpResponse, Responder};
+use actix_web::{get, http::{header::HeaderValue, StatusCode}, post, web::{self, Json, Redirect, Data}, HttpRequest, HttpResponse, Responder};
 use jwt::Store;
 use crate::utils::cookie_parser::parse_cookies;
 use hmac::{Hmac, Mac};
@@ -11,6 +11,11 @@ use crate::utils::check_login::check_login;
 use crate::utils::{response::JsonResponse};
 use awc::{Connector, Client};
 use openssl::ssl::{SslConnector, SslMethod};
+use crate::models::party_model::*;
+use crate::models::user_model::*;
+use crate::application_data::*;
+use mongodb::bson::oid::ObjectId;
+
 #[get("/puto")]
 async fn start_party(req: HttpRequest) -> impl Responder {
     let header_map = req.headers();
@@ -36,7 +41,7 @@ async fn start_party(req: HttpRequest) -> impl Responder {
 async fn start_party_two(req: HttpRequest) -> impl Responder {
     let header_map = req.headers();
     //println!("{:?}", header_map);
-    if !check_login(header_map) {
+    if !check_login(header_map).0 {
         // not logged in
         let not_logged_in_response = JsonResponse::new(false, true, String::from("http://localhost:3000/login"));
         return HttpResponse::Ok().json(not_logged_in_response);
@@ -90,7 +95,8 @@ impl JsonResponseForWithAccessToken {
 async fn request_token(req: HttpRequest, form: web::Form<CreatePartyData>) -> impl Responder {
 
     // check that the user is logged in
-    if !check_login(req.headers()) {
+    let (logged, user_id) = check_login(req.headers());
+    if !logged {
         // not logged in, redirect
         let res = JsonResponse::new(false, true, String::from("http://localhost:3000/login"));
         return HttpResponse::Ok().json(res);
@@ -116,6 +122,19 @@ async fn request_token(req: HttpRequest, form: web::Form<CreatePartyData>) -> im
     //println!("{}", form.id);
     //println!("{}", form.secret);
     // create a party and save it to the data base
-    // TODO
-    HttpResponse::Ok().json(JsonResponseForWithAccessToken::new(JsonResponse::simple_response(), payload))
+    let party = Party::new(user_id.clone(), payload.access_token.clone(), payload.token_type.clone(), payload.expires_in.clone());
+    let collection = PartyCollection::new(req.app_data::<Data<ApplicationData>>());
+    // save it to the database
+    let party_id = collection.save_party(party).await;
+    // save it to the database
+    let user_collection = User::new(req.app_data::<Data<ApplicationData>>());
+    // convert the string to objectid
+    let user_id = ObjectId::parse_str(user_id).unwrap();
+    let all_good = user_collection.add_owned_party(user_id, party_id).await;
+    if all_good {
+        return HttpResponse::Ok().json(JsonResponseForWithAccessToken::new(JsonResponse::simple_response(), payload));
+    }
+
+    HttpResponse::InternalServerError().json(JsonResponse::new(false, false, String::from("")))
+    
 }

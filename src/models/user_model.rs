@@ -39,6 +39,20 @@ impl User {
         let result = self.collection.find_one(filter, None).await.expect("Could not retrive user from database");
         result
     } // end of query user by email
+
+    /// Make the user the owner of a party
+    pub async fn add_owned_party(&self, id: ObjectId, party_id: ObjectId) -> bool {
+        let filter = doc! {"_id": id};
+
+        let update = doc! {"$set": doc! {"owned_party": party_id}};
+        // add the owned party
+        let result = self.collection.update_one(filter, update, None).await.expect("Should update the document");
+        if result.modified_count == 1 {
+            // one was modified
+            return true;
+        }
+        return false;
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]

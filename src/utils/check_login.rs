@@ -1,21 +1,20 @@
 use actix_web::http::header::HeaderMap;
-use actix_web::{web, http::header::HeaderValue};
+use actix_web::http::header::HeaderValue;
 use hmac::{Hmac, Mac};
 use jwt::VerifyWithKey;
 use sha2::Sha256;
 use std::collections::BTreeMap;
 use crate::utils::cookie_parser::parse_cookies;
-use std::collections::HashMap;
 
 /// Checks if a user is logged in
 /// Returns true if the user is logged in, false otherwise
-pub fn check_login(header_map: &HeaderMap) -> bool {
+pub fn check_login(header_map: &HeaderMap) -> (bool, String) {
     let cookie_str = "Cookie";
     let log_token = header_map.get(cookie_str);
     // check if there are some cookies
     if log_token.is_none() {
         // no cookies
-        return false;
+        return (false, String::from("no jwt cookie"));
     }
     // check that the jwt cookie is present
     let header_value: &HeaderValue = log_token.unwrap();
@@ -43,10 +42,10 @@ pub fn check_login(header_map: &HeaderMap) -> bool {
         //assert_eq!(claims["sub"], "someone");
         println!("{:?}", claims);
 
-        return true;
+        return (true, claims["id"].to_string());
     } else {
         // there is no jwt
         println!("{}", String::from("About to redirect because no jwt cookie"));
-        return false;
+        return (false, String::from("no jwt cookie"));
     }
 }
