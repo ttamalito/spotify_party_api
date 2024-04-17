@@ -28,3 +28,17 @@ impl JsonResponse {
         JsonResponse::new(false, true, String::from("http://localhost:3000/login"))
     }
 }
+
+impl JsonResponse {
+    pub fn get_result(&self) -> bool {
+        self.result
+    }
+
+    pub fn get_redirected(&self) -> bool {
+        self.redirected
+    }
+
+    pub fn get_url(&self) -> String {
+        self.url.clone()
+    }
+}

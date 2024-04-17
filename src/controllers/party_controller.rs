@@ -53,13 +53,38 @@ struct CreatePartyData {
 } // end of CreatePartyData
 
 
-
+/// Struct to deserialize the data of the spotify api, for the request token
 #[derive(Deserialize)]
 struct AccessToken {
     access_token: String,
     token_type: String,
     expires_in: i32
 }
+
+
+#[derive(Deserialize, Serialize)]
+struct JsonResponseForWithAccessToken {
+    result: bool,
+    redirected: bool,
+    url: String,
+    access_token: String,
+    token_type: String,
+    expires_in: i32
+}
+
+impl JsonResponseForWithAccessToken {
+    pub fn new(json: JsonResponse, token: AccessToken) -> Self {
+        JsonResponseForWithAccessToken {
+            result: json.get_result(),
+            redirected: json.get_redirected(),
+            url: json.get_url(),
+            access_token: token.access_token,
+            token_type: token.token_type,
+            expires_in: token.expires_in
+        }
+    }
+}
+
 /// Controller to get the client id and the client secret and request the access token
 #[post("/createParty")]
 async fn request_token(req: HttpRequest, form: web::Form<CreatePartyData>) -> impl Responder {
@@ -90,5 +115,5 @@ async fn request_token(req: HttpRequest, form: web::Form<CreatePartyData>) -> im
     println!("{}", payload.expires_in);
     //println!("{}", form.id);
     //println!("{}", form.secret);
-    HttpResponse::Ok().json(JsonResponse::simple_response())
+    HttpResponse::Ok().json(JsonResponseForWithAccessToken::new(JsonResponse::simple_response(), payload))
 }

@@ -46,5 +46,6 @@ pub struct UserDocument {
     pub email: String,
     pub name: String,
     pub password: String,
-    pub _id: Option<ObjectId>
+    pub _id: Option<ObjectId>,
+    pub owned_party: Option<ObjectId>,
 }

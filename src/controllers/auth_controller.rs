@@ -122,7 +122,8 @@ async fn post_signup(req: HttpRequest, form: web::Form<SignupData>) -> impl Resp
         email: email.to_owned(),
         password: password.to_owned(),
         name: name.to_owned(),
-        _id: None
+        _id: None,
+        owned_party: None
 
     };
     let serialized_doc = bson::to_bson(&to_add_doc).expect("Could not serialize the document in sign up");
