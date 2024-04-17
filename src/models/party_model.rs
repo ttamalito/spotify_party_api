@@ -48,6 +48,12 @@ impl PartyCollection {
             return false;
         }
     }
+
+    /// saves a party to the database
+    pub async fn save_party(&self, party: Party) -> ObjectId {
+        let result = self.collection.insert_one(party, None).await.expect("Should insert a new party doc");
+        result.inserted_id.as_object_id().unwrap()
+    }
 }
 
 #[derive(Deserialize, Serialize)]
