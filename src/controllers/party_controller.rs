@@ -103,7 +103,13 @@ async fn request_token(req: HttpRequest, form: web::Form<CreatePartyData>) -> im
         let res = JsonResponse::new(false, true, String::from("http://localhost:3000/login"));
         return HttpResponse::Ok().json(res);
     }
-    // the user is logged in, send the request to get the access token
+    // check that the user doesnot own another party
+    let optional_party = PartyCollection::new(req.app_data::<Data<ApplicationData>>()).query_by_owner(ObjectId::from_str(user_id.clone().as_str()).unwrap()).await;
+    if optional_party.is_some() {
+        // user already has a party
+        return HttpResponse::Forbidden().json(JsonResponse::new(false, false, String::from("")));
+    }
+    // the user is logged in and doesn't have a party, send the request to get the access token
     let builder = SslConnector::builder(SslMethod::tls()).unwrap();
 
     let client = Client::builder()

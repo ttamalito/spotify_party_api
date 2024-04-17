@@ -53,8 +53,15 @@ impl PartyCollection {
     pub async fn save_party(&self, party: Party) -> ObjectId {
         let result = self.collection.insert_one(party, None).await.expect("Should insert a new party doc");
         result.inserted_id.as_object_id().unwrap()
-    }
-}
+    } // end of save party
+
+    /// Queries a Party Document given the owner
+    pub async fn query_by_owner(&self, owner_id: ObjectId) -> Option<Party> {
+        let filter = doc! {"owner": owner_id};
+        let result = self.collection.find_one(filter, None).await.expect("Should query the Party document");
+        result
+    } // end of query by owner
+} // methods for PartyCollection
 
 /// Struct to represent a party
 #[derive(Deserialize, Serialize, Debug)]
