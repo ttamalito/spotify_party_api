@@ -9,7 +9,7 @@ use mongodb::bson::{doc, Document};
 use mongodb::Collection;
 
 pub struct User {
-    collection: Collection<Document>
+    collection: Collection<UserDocument>
 }
 
 impl User {
@@ -25,7 +25,7 @@ impl User {
             panic!("Could not access the database");
         }
 
-        let collection: Collection<Document> = database.unwrap().collection(get_collection(Collections::USERS).as_str());
+        let collection: Collection<UserDocument> = database.unwrap().collection(get_collection(Collections::USERS).as_str());
 
         // create the new user
         User {
@@ -33,7 +33,7 @@ impl User {
         }
     } // ends new
 
-    pub async fn query_user_by_email(&self, email: &str) -> Option<Document> {
+    pub async fn query_user_by_email(&self, email: &str) -> Option<UserDocument> {
         // through the collection access the database
         let filter = doc! {"email": email};
         let result = self.collection.find_one(filter, None).await.expect("Could not retrive user from database");
@@ -52,6 +52,22 @@ impl User {
             return true;
         }
         return false;
+    }
+
+    /// Removes the owned party from a user
+    pub async fn remove_owned_party(&self, id: ObjectId) -> bool {
+        let filter = doc! {"_id": id};
+
+        let update = doc! {"$set": doc! {"owned_party": None::<ObjectId>}};
+        let result = self.collection.update_one(filter, update, None).await.expect("Should remove owned party");
+        // return
+        result.modified_count == 1
+    }
+
+    pub async fn query_user_by_id(&self, id: ObjectId) -> Option<UserDocument> {
+        let filter = doc! {"_id": id};
+        let result = self.collection.find_one(filter, None).await.expect("Should query the user");
+        result
     }
 }
 

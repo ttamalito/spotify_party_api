@@ -7,7 +7,7 @@ use std::collections::BTreeMap;
 use crate::utils::cookie_parser::parse_cookies;
 
 /// Checks if a user is logged in
-/// Returns true if the user is logged in, false otherwise
+/// Returns true if the user is logged in, false otherwise with the corresponding user id
 pub fn check_login(header_map: &HeaderMap) -> (bool, String) {
     let cookie_str = "Cookie";
     let log_token = header_map.get(cookie_str);

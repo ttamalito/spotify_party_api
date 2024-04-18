@@ -61,6 +61,13 @@ impl PartyCollection {
         let result = self.collection.find_one(filter, None).await.expect("Should query the Party document");
         result
     } // end of query by owner
+
+    /// Deletes a party from the database
+    pub async fn delete_party(&self, id: ObjectId) -> bool {
+        let filter = doc! {"_id": id};
+        let result = self.collection.delete_one(filter, None).await.expect("Should delete party from the database");
+        result.deleted_count == 1
+    }
 } // methods for PartyCollection
 
 /// Struct to represent a party

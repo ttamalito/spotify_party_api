@@ -4,7 +4,7 @@ use std::collections::HashMap;
 #[derive(Debug)]
 pub struct MyCookie {
     key: String,
-    value: String
+    pub value: String
 }
 
 /// Implementation block of static functions
@@ -32,7 +32,7 @@ impl MyCookie {
 }
 
 
-
+/// Parses all the cookies
 pub fn parse_cookies(value:&str) -> HashMap<String, MyCookie> {
     //let mut result: Vec<MyCookie> = Vec::new();
     let mut result: HashMap<String, MyCookie> = HashMap::new();
