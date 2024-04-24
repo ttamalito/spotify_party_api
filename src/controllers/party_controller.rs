@@ -4,7 +4,7 @@ use crate::utils::cookie_parser::parse_cookies;
 use hmac::{Hmac, Mac};
 use jwt::VerifyWithKey;
 use sha2::Sha256;
-use std::{collections::BTreeMap, str::FromStr, time::Duration};
+use std::{cmp::Ordering, collections::BTreeMap, str::FromStr, time::Duration};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use crate::utils::check_login::check_login;
@@ -270,7 +270,7 @@ async fn join_party(req: HttpRequest) -> impl Responder {
 
     if party.is_none() {
         // there is no party
-        return HttpResponse::Forbidden().json(JsonResponse::new(false, false, String::from("")));
+        return HttpResponse::Forbidden().json(JsonResponse::new(false, false, String::from("There is no party with that id")));
     }
 
     // there is a party, check if the user is already a memeber of the party
@@ -281,6 +281,10 @@ async fn join_party(req: HttpRequest) -> impl Responder {
     for user in members {
         let ordering = user_id.cmp(user);
         println!("{:?}", ordering);
+        if ordering.is_eq() {
+            // the user is already a memeber of the party
+            return HttpResponse::ImATeapot().json(JsonResponse::new(false, false, String::from("User is a memebr of the party already")));
+        }
     }
 
     HttpResponse::Ok().json(JsonResponse::simple_response())
