@@ -242,3 +242,42 @@ async fn pause_playback(req: HttpRequest, form: web::Form<PausePlaybackForm> ) -
     println!("{:?}", payload);
     HttpResponse::BadRequest().finish()
 } // end of pause_playback
+
+
+#[get("/joinParty/{id}")]
+async fn join_party(req: HttpRequest) -> impl Responder {
+
+    // check if the user is logged in
+    let (logged, user_id) = check_login(req.headers());
+    if !logged {
+        return HttpResponse::Unauthorized().json(JsonResponse::redirect_to_login());
+    }
+
+    // get the party data
+    let match_info_data = req.match_info();
+    let party_id = match_info_data.get("id").unwrap();
+
+    //println!("{:?}", party_id);
+
+    // now check that the party exists
+    let party_collection = PartyCollection::new(req.app_data::<Data<ApplicationData>>());
+    let party_id = ObjectId::parse_str(party_id).unwrap();
+    let party = party_collection.query_by_id(party_id).await.expect("Could not query the database");
+
+    if party.is_none() {
+        // there is no party
+        return HttpResponse::Forbidden().json(JsonResponse::new(false, false, String::from("")));
+    }
+
+    // there is a party, check if the user is already a memeber of the party
+    let party = party.unwrap();
+    let members = party.get_members_as_ref();
+    // check if the user is part of the memebers of the party
+    let user_id = ObjectId::parse_str(user_id).unwrap();
+    for user in members {
+        let ordering = user_id.cmp(user);
+        println!("{:?}", ordering);
+    }
+
+    HttpResponse::Ok().body("The route exists")
+}

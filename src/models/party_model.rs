@@ -11,7 +11,7 @@ use mongodb::Collection;
 pub struct PartyCollection {
     collection: Collection<Party>
 }
-
+/// Implementation block for all the operations to be performed on the collection
 impl PartyCollection {
     pub fn new(data: Option<&Data<ApplicationData>>) -> Self {
         let app_data = data.unwrap();
@@ -101,4 +101,8 @@ impl Party {
             access_token: PartyAccessToken {access_token, token_type, expires_in}
         }
     } // end of new
+
+    pub fn get_members_as_ref(&self) -> &Vec<ObjectId> {
+        return &self.members;
+    }
 }
