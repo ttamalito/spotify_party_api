@@ -261,7 +261,11 @@ async fn join_party(req: HttpRequest) -> impl Responder {
 
     // now check that the party exists
     let party_collection = PartyCollection::new(req.app_data::<Data<ApplicationData>>());
-    let party_id = ObjectId::parse_str(party_id).unwrap();
+    let party_id = ObjectId::parse_str(party_id);
+    if party_id.is_err() {
+        return HttpResponse::Forbidden().json(JsonResponse::new(false, false, String::from("Not a valid Object Id")));
+    }
+    let party_id = party_id.unwrap();
     let party = party_collection.query_by_id(party_id).await.expect("Could not query the database");
 
     if party.is_none() {
@@ -279,5 +283,5 @@ async fn join_party(req: HttpRequest) -> impl Responder {
         println!("{:?}", ordering);
     }
 
-    HttpResponse::Ok().body("The route exists")
+    HttpResponse::Ok().json(JsonResponse::simple_response())
 }
