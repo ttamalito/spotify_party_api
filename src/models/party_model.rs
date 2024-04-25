@@ -77,7 +77,8 @@ pub struct Party {
     pub _id: ObjectId,
     pub members: Vec<ObjectId>,
     pub owner: ObjectId,
-    pub access_token: PartyAccessToken
+    pub access_token: PartyAccessToken,
+    pub requested_to_join: Vec<ObjectId>
 }
 
 /// Struct to represent an access token
@@ -98,7 +99,8 @@ impl Party {
             _id: ObjectId::new(),
             members: vec![],
             owner: object_id,
-            access_token: PartyAccessToken {access_token, token_type, expires_in}
+            access_token: PartyAccessToken {access_token, token_type, expires_in},
+            requested_to_join: vec![]
         }
     } // end of new
 
