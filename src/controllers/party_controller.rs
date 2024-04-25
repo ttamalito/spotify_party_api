@@ -287,7 +287,17 @@ async fn join_party(req: HttpRequest) -> impl Responder {
         }
     }
 
-    // else add the user to the party
+    // check if the user has requested to join the party already
+    for user in party.get_requested_to_join_as_ref() {
+        let ordering = user_id.cmp(user);
+        //println!("{:?}", ordering);
+        if ordering.is_eq() {
+            // the user has already requested to join the party
+            return HttpResponse::ImATeapot().json(JsonResponse::new(false, false, String::from("User requested to join the party already")));
+        }
+    }
+
+    // else add the user to the people that have requested to join the party
     let insertion_result = party_collection.insert_member(party_id, user_id).await;
     if !insertion_result {
         return HttpResponse::Forbidden().json(JsonResponse::new(false, false, String::from("Something went wrong while inserting the user to the party")));
