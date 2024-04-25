@@ -298,10 +298,17 @@ async fn join_party(req: HttpRequest) -> impl Responder {
     }
 
     // else add the user to the people that have requested to join the party
-    let insertion_result = party_collection.insert_member(party_id, user_id).await;
+    let res = party_collection.insert_requested_to_join(party_id, user_id).await;
+    if !res {
+        return HttpResponse::Forbidden().json(JsonResponse::new(false, false, String::from("Something went wrong while inserting the user to the queueof the  party")));
+    }
+
+    /*
+        let insertion_result = party_collection.insert_member(party_id, user_id).await;
     if !insertion_result {
         return HttpResponse::Forbidden().json(JsonResponse::new(false, false, String::from("Something went wrong while inserting the user to the party")));
     }
+     */
     // else all good
     HttpResponse::Ok().json(JsonResponse::simple_response())
 }
