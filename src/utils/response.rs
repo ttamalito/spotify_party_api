@@ -71,3 +71,22 @@ impl JsonResponseForSigningUp {
     }
     
 }
+
+#[derive(Serialize)]
+pub struct JsonResponseWithLengthOfQueue {
+    result: bool,
+    redirected: bool,
+    url: String,
+    length: usize
+}
+
+impl JsonResponseWithLengthOfQueue {
+    pub fn new(result: bool, redirected: bool, url: String, length: usize) -> Self {
+        JsonResponseWithLengthOfQueue {
+            result,
+            redirected,
+            url,
+            length 
+        }
+    }
+}
