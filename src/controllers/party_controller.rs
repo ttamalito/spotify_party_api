@@ -1,6 +1,6 @@
 use actix_web::{get, http::{header::HeaderValue, StatusCode}, post, web::{self, Json, Redirect, Data}, HttpRequest, HttpResponse, Responder};
 use jwt::Store;
-use crate::utils::cookie_parser::parse_cookies;
+use crate::utils::{cookie_parser::parse_cookies, response::JsonResponseWithLengthOfQueue};
 use hmac::{Hmac, Mac};
 use jwt::VerifyWithKey;
 use sha2::Sha256;
@@ -358,7 +358,8 @@ async fn get_length_to_join_queue(req: HttpRequest) -> impl Responder {
     // else all good
     // get the length of the queue
     let length = party.get_requested_to_join_as_ref().len();
-    
 
-    HttpResponse::Ok().finish()
+    let response = JsonResponseWithLengthOfQueue::new(true, false, String::from("All good"), length);
+
+    HttpResponse::Ok().json(response)
 }
