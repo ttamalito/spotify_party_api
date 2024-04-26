@@ -312,3 +312,53 @@ async fn join_party(req: HttpRequest) -> impl Responder {
     // else all good
     HttpResponse::Ok().json(JsonResponse::simple_response())
 }
+
+#[get("/getQueueToJoinLength/{id}")]
+async fn get_length_to_join_queue(req: HttpRequest) -> impl Responder {
+    // check that the user is logged in
+    let (logged, user_id) = check_login(req.headers());
+    if !logged {
+        // not logged in
+        return HttpResponse::Forbidden().json(JsonResponse::redirect_to_login());
+    }
+
+    // get the party_id
+    let match_info_data = req.match_info();
+    let party_id = match_info_data.get("id").unwrap();
+
+    // get the party
+    let party_collection = PartyCollection::new(req.app_data::<Data<ApplicationData>>());
+
+    // check if it can be converted to OBjectId
+    let possible_party_id = ObjectId::parse_str(party_id);
+    if possible_party_id.is_err() {
+        // not possible
+        return HttpResponse::BadRequest().json(JsonResponse::new(false, false, String::from("Not possible to convert the id to an ObjectId")));
+    }
+
+    // else all good
+    let party_id = possible_party_id.unwrap();
+    // get the party from the database
+    let party = party_collection.query_by_id(party_id).await.unwrap();
+    if party.is_none() {
+        // there is no party
+        return HttpResponse::BadRequest().json(JsonResponse::new(false, false, String::from("No party with that id")));
+    }
+    let party = party.unwrap();
+
+    // check if the user is the owner of the party
+    let owner_of_party = party.owner;    
+    let user_id = ObjectId::parse_str(user_id).unwrap();
+    let ordering = user_id.cmp(&owner_of_party);
+    if ordering.is_ne() {
+        // not equal
+        return HttpResponse::BadRequest().json(JsonResponse::new(false, false, String::from("You are not the owner of the party")));
+    }
+
+    // else all good
+    // get the length of the queue
+    let length = party.get_requested_to_join_as_ref().len();
+    
+
+    HttpResponse::Ok().finish()
+}
