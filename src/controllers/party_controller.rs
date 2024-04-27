@@ -358,7 +358,7 @@ async fn get_length_to_join_queue(req: HttpRequest) -> impl Responder {
     // else all good
     // get the length of the queue
     let length = party.get_requested_to_join_as_ref().len();
-
+    // send the json response with the corresponding length
     let response = JsonResponseWithLengthOfQueue::new(true, false, String::from("All good"), length);
 
     HttpResponse::Ok().json(response)
