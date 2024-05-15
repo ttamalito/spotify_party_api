@@ -1,4 +1,4 @@
-use actix_web::{get, http::{header::HeaderValue, StatusCode}, post, web::{self, Json, Redirect, Data}, HttpRequest, HttpResponse, Responder};
+use actix_web::{get, http::{header::HeaderValue, StatusCode}, post, web::{self, Json, Redirect, Data}, HttpRequest, HttpResponse, Responder, put};
 use jwt::Store;
 use crate::utils::{cookie_parser::parse_cookies, response::JsonResponseWithLengthOfQueue};
 use hmac::{Hmac, Mac};
@@ -178,7 +178,7 @@ struct ErrorSpotify {
 struct MainError {
     error: ErrorSpotify
 }
-
+/// Controller to pause the playback
 #[post("/pausePlayback")]
 async fn pause_playback(req: HttpRequest, form: web::Form<PausePlaybackForm> ) -> impl Responder {
     // check that the user is logged in
@@ -243,7 +243,7 @@ async fn pause_playback(req: HttpRequest, form: web::Form<PausePlaybackForm> ) -
     HttpResponse::BadRequest().finish()
 } // end of pause_playback
 
-
+/// Controller to request to join a party
 #[get("/joinParty/{id}")]
 async fn join_party(req: HttpRequest) -> impl Responder {
 
@@ -313,6 +313,7 @@ async fn join_party(req: HttpRequest) -> impl Responder {
     HttpResponse::Ok().json(JsonResponse::simple_response())
 }
 
+/// get the amount of people that want to join the party
 #[get("/getQueueToJoinLength/{id}")]
 async fn get_length_to_join_queue(req: HttpRequest) -> impl Responder {
     // check that the user is logged in
@@ -362,4 +363,28 @@ async fn get_length_to_join_queue(req: HttpRequest) -> impl Responder {
     let response = JsonResponseWithLengthOfQueue::new(true, false, String::from("All good"), length);
 
     HttpResponse::Ok().json(response)
+}
+
+/// controller to accept a user into the party
+#[put("/acceptIntoParty/{id}")]
+async fn acceptIntoParty(req: HttpRequest) -> impl Responder {
+
+
+    HttpResponse::Ok().finish()
+}
+
+/// Controller to retrieve all the user that want to join a party
+#[get("/getQueueToJoinParty/{party}")]
+async fn getQueueToJoinParty(req: HttpRequest) -> impl Responder {
+
+    // check that the user is logged in
+    let (logged, user_id) = check_login(req.headers());
+    if !logged {
+        // user is not logged in
+        return HttpResponse::Unauthorized().json(JsonResponse::redirect_to_login())
+    }
+    
+
+
+    HttpResponse::Ok().finish()
 }
