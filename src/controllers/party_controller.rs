@@ -17,6 +17,12 @@ use crate::application_data::*;
 use mongodb::bson::oid::ObjectId;
 use base64::prelude::*;
 use crate::utils::get_cookie::*;
+use crate::utils::structs_to_serialize_deserialize::*;
+
+
+
+
+
 #[get("/puto")]
 async fn start_party(req: HttpRequest) -> impl Responder {
     let header_map = req.headers();
@@ -416,6 +422,22 @@ async fn getQueueToJoinParty(req: HttpRequest) -> impl Responder {
     // check that the user is the owner of the party
     let owner = party.owner;
     let user_id = ObjectId::parse_str(user_id).unwrap();
+    let comparison = owner.cmp(&user_id);
+    if comparison.is_ne() {
+        // not the owner
+        return HttpResponse::Unauthorized().json(JsonResponse::new(false, false, String::from("User is not the owner of the paryt")));
+    }
 
-    HttpResponse::Ok().finish()
+    // ok so all good at this point, return the list of users wanting to join
+    let users_wanting_to_join = party.get_requested_to_join_as_ref();
+
+    let response = ResponseForQueueToJoinParty {
+        result: true,
+        message: String::from("All gucci"),
+        users: users_wanting_to_join.to_owned()
+    };
+
+
+
+    HttpResponse::Ok().json(response)
 }
