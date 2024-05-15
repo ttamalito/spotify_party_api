@@ -383,8 +383,39 @@ async fn getQueueToJoinParty(req: HttpRequest) -> impl Responder {
         // user is not logged in
         return HttpResponse::Unauthorized().json(JsonResponse::redirect_to_login())
     }
-    
 
+    // get the party_id
+    let match_info_data = req.match_info();
+    let party_id = match_info_data.get("party").unwrap();
+
+    // check that the party exists
+    // see if it can be converted to objectId
+    let possible_party_id = ObjectId::parse_str(party_id);
+    if possible_party_id.is_err() {
+        // not possible
+        return HttpResponse::BadRequest().json(JsonResponse::new(false, false, String::from("Not possible to convert the id to an ObjectId")));
+    }
+
+    // else all good
+    let party_id = possible_party_id.unwrap();
+
+    // get the collection
+    let party_collection = PartyCollection::new(req.app_data::<Data<ApplicationData>>());
+
+    // query the database
+    let possible_party = party_collection.query_by_id(party_id).await.expect("Should query the database");
+
+    if possible_party.is_none() {
+        // there is no party with that id
+        return HttpResponse::BadRequest().json(JsonResponse::new(false, false, String::from("No party with that id")))
+    }
+
+    // otherwise there is a party
+    let party = possible_party.unwrap();
+
+    // check that the user is the owner of the party
+    let owner = party.owner;
+    let user_id = ObjectId::parse_str(user_id).unwrap();
 
     HttpResponse::Ok().finish()
 }
