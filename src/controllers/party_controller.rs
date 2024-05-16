@@ -398,6 +398,44 @@ async fn acceptIntoParty(req: HttpRequest) -> impl Responder {
     let user_to_accept = match_info_data.get("user").unwrap();
 
     // convert them into object id
+    let possible_party_id = convert_to_object_id(party_id);
+    let possible_user_to_accept = convert_to_object_id(user_to_accept);
+
+    if possible_party_id.is_none() || possible_user_to_accept.is_none() {
+        return HttpResponse::BadRequest().json(JsonResponse::new(false, false, String::from("Bad user id or party id")));
+    }
+
+    // get the object ids
+    let party_id = possible_party_id.unwrap();
+    let user_to_accept_id = possible_user_to_accept.unwrap();
+
+    // now get the party collection, if it exists
+    let party_collection = PartyCollection::new(req.app_data::<Data<ApplicationData>>());
+    // query the party
+    let party = party_collection.query_by_id(party_id).await.expect("Should perform the query");
+    if party.is_none() {
+        return HttpResponse::BadRequest().json(JsonResponse::new(false, false, String::from("There is no party with that id")));
+    }
+    let party = party.unwrap();
+
+    // check the owner of the party
+    let possible_owner = convert_to_object_id(&user_id);
+    if possible_owner.is_none() {
+        return HttpResponse::BadRequest().json(JsonResponse::new(false, false, String::from("Could not convert your id to object id")));
+    }
+
+    let owner = possible_owner.unwrap();
+
+    // check everything
+    let users_queue = party.get_requested_to_join_as_ref();
+
+    let mut user_is_present = false;
+    for user in users_queue {
+        let compare = user.cmp(&user_to_accept_id);
+        if compare.is_eq() {
+            user_is_present = true; 
+        }
+    }
 
     HttpResponse::Ok().finish()
 }
