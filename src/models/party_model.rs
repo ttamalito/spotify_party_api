@@ -80,6 +80,17 @@ impl PartyCollection {
             return false;
         }
     } // end of insert_requested_to_join
+
+    /// Removes a user from the requested_to_join queue
+    pub async fn remove_user_from_queue(&self, party_id: ObjectId, user_id: ObjectId) -> bool {
+        let filter = doc! {"_id": party_id};
+        let update = doc! {"$pull": doc! {"requested_to_join": user_id}};
+        let result = self.collection.update_one(filter, update, None).await.expect("Should update the document");
+        if result.modified_count == 1 {
+            return true;
+        } 
+        false
+    }
 } // methods for PartyCollection
 
 /// Struct to represent a party

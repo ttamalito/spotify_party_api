@@ -435,9 +435,26 @@ async fn acceptIntoParty(req: HttpRequest) -> impl Responder {
         if compare.is_eq() {
             user_is_present = true; 
         }
+    } // end of for loop
+    // check the owner
+    let owner_party = party.owner;
+    let owner_compare = owner_party.cmp(&owner);
+    let owner_is_good = owner_compare.is_eq();
+
+    if !owner_is_good || !user_is_present {
+        // not good
+        return HttpResponse::BadRequest().json(JsonResponse::new(false, false, String::from("You are not the owner or the user does not want to join")));
     }
 
-    HttpResponse::Ok().finish()
+    // otherwise is good
+    let result = party_collection.insert_member(party_id, user_to_accept_id).await;
+    if result {
+        let _removal = party_collection.remove_user_from_queue(party_id, user_to_accept_id).await;
+    } else {
+        return HttpResponse::InternalServerError().json(JsonResponse::new(false, false, String::from("COuld not save data to the data base")));
+    }
+
+    HttpResponse::Ok().json(JsonResponse::simple_response())
 }
 
 /// Controller to retrieve all the user that want to join a party
