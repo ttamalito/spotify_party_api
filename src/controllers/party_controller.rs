@@ -1,4 +1,4 @@
-use actix_web::{get, http::{header::HeaderValue, StatusCode}, post, web::{self, Json, Redirect, Data}, HttpRequest, HttpResponse, Responder, put};
+use actix_web::{get, http::{header::{ContentType, HeaderValue}, StatusCode}, post, put, web::{self, Data, Json, Redirect}, HttpRequest, HttpResponse, Responder};
 use jwt::Store;
 use crate::utils::{cookie_parser::parse_cookies, response::JsonResponseWithLengthOfQueue};
 use hmac::{Hmac, Mac};
@@ -18,8 +18,7 @@ use mongodb::bson::oid::ObjectId;
 use base64::prelude::*;
 use crate::utils::get_cookie::*;
 use crate::utils::structs_to_serialize_deserialize::*;
-
-
+use serde_json;
 
 
 
@@ -130,11 +129,11 @@ async fn request_token(req: HttpRequest, form: web::Form<CreatePartyData>) -> im
     let builder = SslConnector::builder(SslMethod::tls()).unwrap();
 
     let client = Client::builder()
-        .connector(Connector::new().openssl(builder.build()).timeout(Duration::from_secs(5)))
+        .connector(Connector::new().openssl(builder.build()).timeout(Duration::from_secs(20)))
         .finish();
 
     //println!("{}", req_body);
-    let mut response = client.post("https://accounts.spotify.com/api/token").timeout(Duration::from_secs(5)).
+    let mut response = client.post("https://accounts.spotify.com/api/token").timeout(Duration::from_secs(20)).
     insert_header(("Content-Type", "application/x-www-form-urlencoded"))
     .insert_header(("Authorization", base64_authorization_header))
     .send_body(req_body).await.unwrap();
@@ -184,6 +183,12 @@ struct ErrorSpotify {
 struct MainError {
     error: ErrorSpotify
 }
+
+#[derive(Deserialize, Serialize, Debug)]
+struct MainError2 {
+    ContentType: MainError
+}
+
 /// Controller to pause the playback
 #[post("/pausePlayback")]
 async fn pause_playback(req: HttpRequest, form: web::Form<PausePlaybackForm> ) -> impl Responder {
@@ -224,19 +229,22 @@ async fn pause_playback(req: HttpRequest, form: web::Form<PausePlaybackForm> ) -
     if auth_token.is_none() {
         return HttpResponse::Unauthorized().json(JsonResponse::new(false, true, String::from("http://localhost:3000/startParty"))); // TODO --- change the url to redirect, to refresh the token
     }
+    println!("{:?}", auth_token);
     // there is a token, create the &str
     let auth_header = format!("{}{}", "Bearer ", auth_token.unwrap());
     let auth_header = auth_header.as_str();
+    println!("{:?}", auth_header);
     let builder = SslConnector::builder(SslMethod::tls()).unwrap();
 
     let client = Client::builder()
-        .connector(Connector::new().openssl(builder.build()).timeout(Duration::from_secs(10)))
+        .connector(Connector::new().openssl(builder.build()).timeout(Duration::from_secs(20)))
         .finish();
 
     //println!("{}", req_body);
-    let mut response = client.put("https://api.spotify.com/v1/me/player/pause").timeout(Duration::from_secs(5)).
+    let mut response = client.put("https://api.spotify.com/v1/me/player/pause").timeout(Duration::from_secs(20)).
     insert_header(("Authorization", auth_header))
     .send().await.unwrap();
+    println!("{:?}", response.headers());
     // check the response code
     println!("{:?}", response.version());
     println!("{:?}", response.status());
@@ -244,6 +252,7 @@ async fn pause_playback(req: HttpRequest, form: web::Form<PausePlaybackForm> ) -
         // all good
         return HttpResponse::NoContent().finish();
     }
+    //let payload = response.json::<serde_json::Value>().await.expect("What ever");
     let payload = response.json::<MainError>().await.expect("Should deserialize");
     println!("{:?}", payload);
     HttpResponse::BadRequest().finish()
@@ -372,9 +381,22 @@ async fn get_length_to_join_queue(req: HttpRequest) -> impl Responder {
 }
 
 /// controller to accept a user into the party
-#[put("/acceptIntoParty/{id}")]
+#[put("/acceptIntoParty/{user}/{party}")]
 async fn acceptIntoParty(req: HttpRequest) -> impl Responder {
+    // check if the user is logged in
+    let (logged, user_id) = check_login(req.headers());
 
+    if !logged {
+        // not logged in
+        return HttpResponse::Unauthorized().json(JsonResponse::redirect_to_login());
+    }
+
+    // ok, now convert the id into object id
+    let match_info_data = req.match_info();
+    let party_id = match_info_data.get("party").unwrap();
+    let user_to_accept = match_info_data.get("user").unwrap();
+
+    // convert them into object id
 
     HttpResponse::Ok().finish()
 }
