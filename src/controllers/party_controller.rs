@@ -238,11 +238,11 @@ async fn pause_playback(req: HttpRequest, form: web::Form<PausePlaybackForm> ) -
     let builder = SslConnector::builder(SslMethod::tls()).unwrap();
 
     let client = Client::builder()
-        .connector(Connector::new().openssl(builder.build()).timeout(Duration::from_secs(20)))
+        .connector(Connector::new().openssl(builder.build()).timeout(Duration::from_secs(54)))
         .finish();
 
     //println!("{}", req_body);
-    let mut response = client.put("https://api.spotify.com/v1/me/player/pause").timeout(Duration::from_secs(20)).
+    let mut response = client.put("https://api.spotify.com/v1/me/player/pause").timeout(Duration::from_secs(45)).
     insert_header(("Authorization", auth_header))
     .send().await.unwrap();
     println!("{:?}", response.headers());
