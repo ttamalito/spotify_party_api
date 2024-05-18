@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use actix_web::{get, http::{header::{ContentType, HeaderValue}, StatusCode}, post, put, web::{self, Data, Json, Redirect}, HttpRequest, HttpResponse, Responder};
 use jwt::Store;
-use crate::utils::{check_login::check_login, check_party_exists_and_user_is_owner, response};
+use crate::utils::{check_login::check_login, check_party_exists_and_user_is_owner, requests_to_api::inital_check_for_users, response};
 use crate::utils::{response::JsonResponse};
 use awc::{Connector, Client};
 use openssl::ssl::{SslConnector, SslMethod};
@@ -18,6 +18,8 @@ use crate::utils::convert_to_object_id::convert_to_object_id;
 use crate::utils::check_party_exists_and_user_is_owner::*;
 use crate::utils::build_headers::build_authorization_header::*;
 use crate::utils::requests_to_api::put_request_empty::put_request_emtpy_body;
+use crate::utils::requests_to_api::post_request_empty::post_request_emtpy_body;
+use crate::utils::requests_to_api::inital_check_for_users::intial_checkup;
 
 
 // struct for pausePlayback
@@ -81,16 +83,25 @@ async fn pause_playback(req: HttpRequest, form: web::Form<PausePlaybackForm> ) -
 
     // now send the corresponding https request to pause the playback
     // authorization header
-    let auth_token = get_authorization_token_cookie(req.headers());
+    /*
+        let auth_token = get_authorization_token_cookie(req.headers());
     if auth_token.is_none() {
         return HttpResponse::Unauthorized().json(JsonResponse::new(false, true, String::from("http://localhost:3000/startParty"))); // TODO --- change the url to redirect, to refresh the token
     }
-    println!("{:?}", auth_token);
+    println!("{:?}", auth_token); */
     // there is a token, create the &str
-    let auth_header = format!("{}{}", "Bearer ", auth_token.unwrap());
+    let (auth_token_exists, auth_header) = get_authorization_header(req.headers());
+    // check that the token existed in the cookies
+    if !auth_token_exists {
+        // there is no token
+        return HttpResponse::Unauthorized().
+        json(JsonResponse::new(false, true, String::from("http://localhost:3000/startParty")));  // TODO --- change the url to redirect, to refresh the token
+    }
+
     let auth_header = auth_header.as_str();
-    println!("{:?}", auth_header);
-    let builder = SslConnector::builder(SslMethod::tls()).unwrap();
+    let response_result = put_request_emtpy_body(auth_header, "https://api.spotify.com/v1/me/player/pause").await;
+    /*
+        let builder = SslConnector::builder(SslMethod::tls()).unwrap();
 
     let client = Client::builder()
         .connector(Connector::new().openssl(builder.build()).timeout(Duration::from_secs(54)))
@@ -110,9 +121,12 @@ async fn pause_playback(req: HttpRequest, form: web::Form<PausePlaybackForm> ) -
         
         return HttpResponse::NoContent().finish();
     }
+     */
     //let payload = response.json::<serde_json::Value>().await.expect("What ever");
-    let payload = response.json::<MainError>().await.expect("Should deserialize");
-    println!("{:?}", payload);
+    if response_result {
+        return HttpResponse::NoContent().finish();
+    }
+
     HttpResponse::BadRequest().finish()
 } // end of pause_playback
 
@@ -182,7 +196,8 @@ async fn resume_playback(req: HttpRequest) -> impl Responder {
 #[get("/playNext")]
 async fn play_next(req: HttpRequest) -> impl Responder {
 
-    let (logged, user_id) = check_login(req.headers());
+    /*
+        let (logged, user_id) = check_login(req.headers());
 
     if !logged {
         // not logged in
@@ -202,13 +217,22 @@ async fn play_next(req: HttpRequest) -> impl Responder {
         // there is no token
         return HttpResponse::Unauthorized().
         json(JsonResponse::new(false, true, String::from("http://localhost:3000/startParty")));  // TODO --- change the url to redirect, to refresh the token
+    } */
+
+    let (response, possible_auth_header) = intial_checkup(req).await;
+
+    // check if there is an authorization header
+    if possible_auth_header.is_none() {
+        // not authorized
+        return response;
     }
-
-
     // convert the auth header as a str
+    let auth_header = possible_auth_header.unwrap();
     let auth_header = auth_header.as_str();
     // send the request to the api
-    let builder = SslConnector::builder(SslMethod::tls()).unwrap();
+    let response_result = post_request_emtpy_body(auth_header, "https://api.spotify.com/v1/me/player/next").await;
+    /*
+        let builder = SslConnector::builder(SslMethod::tls()).unwrap();
 
     let client = Client::builder()
         .connector(Connector::new().openssl(builder.build()).timeout(Duration::from_secs(54)))
@@ -231,5 +255,11 @@ async fn play_next(req: HttpRequest) -> impl Responder {
     //let payload = response.json::<serde_json::Value>().await.expect("What ever");
     let payload = response.json::<MainError>().await.expect("Should deserialize");
     println!("{:?}", payload);
+     */
+
+    if response_result {
+        return HttpResponse::NoContent().finish();
+    }
+
     HttpResponse::BadRequest().finish()
 }
