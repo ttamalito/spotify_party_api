@@ -113,7 +113,7 @@ async fn pause_playback(req: HttpRequest, form: web::Form<PausePlaybackForm> ) -
     HttpResponse::BadRequest().finish()
 } // end of pause_playback
 
-#[post("/resumePlayback")]
+#[get("/resumePlayback")]
 async fn resume_playback(req: HttpRequest) -> impl Responder {
 
     // first check that the user is logged in
@@ -169,4 +169,59 @@ async fn resume_playback(req: HttpRequest) -> impl Responder {
         println!("{:?}", payload);
         HttpResponse::BadRequest().finish()
 
+}
+
+#[get("/playNext")]
+async fn play_next(req: HttpRequest) -> impl Responder {
+
+    let (logged, user_id) = check_login(req.headers());
+
+    if !logged {
+        // not logged in
+        return HttpResponse::Unauthorized().json(JsonResponse::redirect_to_login());
+    }
+
+    // check that the user is the owner of the party
+    let (is_owner, response) = check_party_exists_and_user_is_owner_method(&user_id, req.app_data::<Data<ApplicationData>>()).await;
+
+    if !is_owner {
+        return response; // if not the owenr send the corresponding response
+    }
+
+    // get the authorization header
+    let (exists_token, auth_header) = get_authorization_header(req.headers());
+    if !exists_token {
+        // there is no token
+        return HttpResponse::Unauthorized().
+        json(JsonResponse::new(false, true, String::from("http://localhost:3000/startParty")));  // TODO --- change the url to redirect, to refresh the token
+    }
+
+
+    // convert the auth header as a str
+    let auth_header = auth_header.as_str();
+    // send the request to the api
+    let builder = SslConnector::builder(SslMethod::tls()).unwrap();
+
+    let client = Client::builder()
+        .connector(Connector::new().openssl(builder.build()).timeout(Duration::from_secs(54)))
+        .finish();
+
+    //println!("{}", req_body);
+    let mut response = client.post("https://api.spotify.com/v1/me/player/next").timeout(Duration::from_secs(45)).
+    insert_header(("Authorization", auth_header))
+    .send().await.unwrap();
+    println!("{:?}", response.headers());
+    // check the response code
+    println!("{:?}", response.version());
+    println!("{:?}", response.status());
+    if response.status() == StatusCode::NO_CONTENT {
+        // all good
+
+        
+        return HttpResponse::NoContent().finish();
+    }
+    //let payload = response.json::<serde_json::Value>().await.expect("What ever");
+    let payload = response.json::<MainError>().await.expect("Should deserialize");
+    println!("{:?}", payload);
+    HttpResponse::BadRequest().finish()
 }
