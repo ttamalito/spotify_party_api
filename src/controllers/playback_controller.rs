@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use actix_web::{get, http::{header::{ContentType, HeaderValue}, StatusCode}, post, put, web::{self, Data, Json, Redirect}, HttpRequest, HttpResponse, Responder};
 use jwt::Store;
-use crate::utils::check_login::check_login;
+use crate::utils::{check_login::check_login, check_party_exists_and_user_is_owner, response};
 use crate::utils::{response::JsonResponse};
 use awc::{Connector, Client};
 use openssl::ssl::{SslConnector, SslMethod};
@@ -14,8 +14,8 @@ use crate::utils::get_cookie::*;
 use crate::models::party_model::*;
 use crate::models::user_model::*;
 use crate::application_data::*;
-
-
+use crate::utils::convert_to_object_id::convert_to_object_id;
+use crate::utils::check_party_exists_and_user_is_owner::*;
 
 
 
@@ -112,3 +112,27 @@ async fn pause_playback(req: HttpRequest, form: web::Form<PausePlaybackForm> ) -
     println!("{:?}", payload);
     HttpResponse::BadRequest().finish()
 } // end of pause_playback
+
+#[post("/resumePlayback")]
+async fn resume_playback(req: HttpRequest) -> impl Responder {
+
+    // first check that the user is logged in
+        // check that the user is logged in
+        let (logged, user_id) = check_login(req.headers());
+
+        if !logged {
+            // not logged in
+            return HttpResponse::Unauthorized().json(JsonResponse::redirect_to_login());
+        }
+
+        // check that the user is the owner of the party
+        let (is_owner, response) = check_party_exists_and_user_is_owner_method(&user_id, req.app_data::<Data<ApplicationData>>()).await;
+
+        if !is_owner {
+            return response; // if not the owenr send the corresponding response
+        }
+
+        
+
+    HttpResponse::Ok().finish()
+}
