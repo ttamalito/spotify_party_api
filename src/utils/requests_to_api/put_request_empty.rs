@@ -20,7 +20,7 @@ pub async fn put_request_emtpy_body(auth_header: &str, url: &str) -> bool {
                 .finish();
         
             //println!("{}", req_body);
-            let mut response = client.put("https://api.spotify.com/v1/me/player/play").timeout(Duration::from_secs(45)).
+            let mut response = client.put(url).timeout(Duration::from_secs(45)).
             insert_header(("Authorization", auth_header))
             .send().await.unwrap();
             println!("{:?}", response.headers());

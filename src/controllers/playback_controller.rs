@@ -17,6 +17,7 @@ use crate::application_data::*;
 use crate::utils::convert_to_object_id::convert_to_object_id;
 use crate::utils::check_party_exists_and_user_is_owner::*;
 use crate::utils::build_headers::build_authorization_header::*;
+use crate::utils::requests_to_api::put_request_empty::put_request_emtpy_body;
 
 
 // struct for pausePlayback
@@ -144,6 +145,8 @@ async fn resume_playback(req: HttpRequest) -> impl Responder {
         // convert the auth header as a str
         let auth_header = auth_header.as_str();
         // send the request to the api
+        let response_result = put_request_emtpy_body(auth_header, "https://api.spotify.com/v1/me/player/play").await;
+        /*
         let builder = SslConnector::builder(SslMethod::tls()).unwrap();
 
         let client = Client::builder()
@@ -163,10 +166,13 @@ async fn resume_playback(req: HttpRequest) -> impl Responder {
     
             
             return HttpResponse::NoContent().finish();
-        }
+        } */
         //let payload = response.json::<serde_json::Value>().await.expect("What ever");
-        let payload = response.json::<MainError>().await.expect("Should deserialize");
-        println!("{:?}", payload);
+        if response_result {
+            // all good 
+            return HttpResponse::NoContent().finish();
+        }
+        // else send a bad request response
         HttpResponse::BadRequest().finish()
 
 }
