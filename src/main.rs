@@ -10,6 +10,7 @@ use controllers::base_controller::{self, hello};
 use controllers::base_controller::*;
 use controllers::auth_controller::*;
 use controllers::party_controller::*;
+use controllers::playback_controller::*;
 use application_data::ApplicationData;
 
 use database_connection::{connect_to_db, DB};
@@ -41,6 +42,7 @@ async fn main() -> std::io::Result<()> {
             .service(request_token)
             .service(pause_playback) // pause playback
             .service(join_party) // GET route to join a party
+            .service(acceptIntoParty) // accept a user into a party
             .route("/hey", web::get().to(dummy))
     })
     .workers(4)
