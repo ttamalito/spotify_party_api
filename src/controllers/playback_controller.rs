@@ -55,7 +55,9 @@ async fn pause_playback(req: HttpRequest, form: web::Form<PausePlaybackForm> ) -
     }
 
     // check that the user owns the party and that the party exists
-    let user_id = ObjectId::parse_str(user_id).expect("Should parse object id");
+    let (is_owner, response) = check_party_exists_and_user_is_owner_method(&user_id, req.app_data::<Data<ApplicationData>>()).await;
+    /*
+        let user_id = ObjectId::parse_str(user_id).expect("Should parse object id");
 
     let party_collection = PartyCollection::new(req.app_data::<Data<ApplicationData>>());
     let party = party_collection.query_by_owner(user_id).await;
@@ -75,7 +77,7 @@ async fn pause_playback(req: HttpRequest, form: web::Form<PausePlaybackForm> ) -
         } else if owned.unwrap().to_string() != form.party_id {
             return HttpResponse::Conflict().json(JsonResponse::new(false, false, String::from("Not the owner of the pary")));
         }
-    }
+    } */
 
     // now send the corresponding https request to pause the playback
     // authorization header
