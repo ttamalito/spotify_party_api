@@ -43,6 +43,8 @@ async fn main() -> std::io::Result<()> {
             .service(pause_playback) // pause playback
             .service(resume_playback) // resume playback
             .service(play_next) // paly next song
+            .service(play_previous) // play previous
+            .service(modify_volume) // modify the volume
             .service(join_party) // GET route to join a party
             .service(acceptIntoParty) // accept a user into a party
             .route("/hey", web::get().to(dummy))

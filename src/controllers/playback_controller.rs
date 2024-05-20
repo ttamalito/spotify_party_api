@@ -263,3 +263,45 @@ async fn play_next(req: HttpRequest) -> impl Responder {
 
     HttpResponse::BadRequest().finish()
 }
+
+#[get("/playPrevious")]
+async fn play_previous(req: HttpRequest) -> impl Responder {
+    let (response, possible_auth_header) = intial_checkup(req).await;
+
+    // check if there is an authorization header
+    if possible_auth_header.is_none() {
+        // not authorized
+        return response;
+    }
+    // convert the auth header as a str
+    let auth_header = possible_auth_header.unwrap();
+    let auth_header = auth_header.as_str();
+    // send the request to the api
+    let response_result = post_request_emtpy_body(auth_header, "https://api.spotify.com/v1/me/player/previous").await;
+    if response_result {
+        return HttpResponse::NoContent().finish();
+    }
+
+    HttpResponse::BadRequest().finish()
+}
+
+#[get("/modifyVolume")]
+async fn modify_volume(req: HttpRequest) -> impl Responder {
+    let (response, possible_auth_header) = intial_checkup(req).await;
+
+    // check if there is an authorization header
+    if possible_auth_header.is_none() {
+        // not authorized
+        return response;
+    }
+    // convert the auth header as a str
+    let auth_header = possible_auth_header.unwrap();
+    let auth_header = auth_header.as_str();
+    // send the request to the api
+    let response_result = put_request_emtpy_body(auth_header, "https://api.spotify.com/v1/me/player/volume?volume_percent=75").await;
+    if response_result {
+        return HttpResponse::NoContent().finish();
+    }
+
+    HttpResponse::BadRequest().finish()
+}
