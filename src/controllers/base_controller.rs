@@ -1,8 +1,8 @@
-use actix_web::{get, post, web::{self, Data}, App, HttpRequest, HttpResponse, HttpServer, Responder};
+use actix_web::{get, web::{Data}, HttpRequest, HttpResponse, Responder};
 use crate::application_data::ApplicationData;
 
 // import mongodb
-use mongodb::bson::{doc, Document};
+
 
 // controller for the main page
 #[get("/")]

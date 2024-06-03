@@ -1,5 +1,5 @@
 use mongodb::bson::oid::ObjectId;
-use serde::{Deserialize, Serialize};
+use serde::{Serialize};
 
 #[derive(Serialize, Debug)]
 pub struct ResponseForQueueToJoinParty {

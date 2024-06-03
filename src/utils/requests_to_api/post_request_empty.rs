@@ -1,13 +1,13 @@
-use serde::{Deserialize, Serialize};
-use actix_web::{get, http::{header::{ContentType, HeaderValue}, StatusCode}, post, put, web::{self, Data, Json, Redirect}, HttpRequest, HttpResponse, Responder};
-use jwt::Store;
+
+use actix_web::{http::{StatusCode}};
+
 use awc::{Connector, Client};
 use openssl::ssl::{SslConnector, SslMethod};
-use hmac::{Hmac, Mac};
-use jwt::VerifyWithKey;
-use sha2::Sha256;
-use mongodb::bson::oid::ObjectId;
-use std::{cmp::Ordering, collections::BTreeMap, str::FromStr, time::Duration};
+use hmac::{Mac};
+
+
+
+use std::{time::Duration};
 use super::errors_spotify::*;
 
 /// Sends a post request to the api with the given authorization header

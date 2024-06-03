@@ -1,5 +1,5 @@
-use actix_web::web::to;
-use jwt::token;
+
+
 use serde::Serialize;
 
 /// Struct to Represent a simple respose from the api

@@ -1,6 +1,6 @@
-use mongodb::{Collection, Database};
-use mongodb::{Client, options::ClientOptions, error};
-use mongodb::bson::{doc, Document};
+use mongodb::{Database};
+use mongodb::{Client};
+
 
 /// Represents the Database client
 pub struct DB {
@@ -59,7 +59,7 @@ impl DB {
 
 
 /// Connects to the database
-pub async fn connect_to_db(uri: &str) -> Result<Box<DB>, Box<dyn std::error::Error>> {
+pub async fn connect_to_db(_uri: &str) -> Result<Box<DB>, Box<dyn std::error::Error>> {
     
 // Parse a connection string into an options struct.
 //let mut client_options = ClientOptions::parse("mongodb://localhost:27017").await.unwrap();

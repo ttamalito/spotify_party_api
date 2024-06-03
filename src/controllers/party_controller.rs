@@ -1,12 +1,12 @@
-use actix_web::{get, http::{header::{ContentType, HeaderValue}, StatusCode}, post, put, web::{self, Data, Json, Redirect}, HttpRequest, HttpResponse, Responder};
+use actix_web::{get, post, put, web::{self, Data}, HttpRequest, HttpResponse, Responder};
 use jwt::Store;
-use crate::utils::{cookie_parser::parse_cookies, response::JsonResponseWithLengthOfQueue};
-use hmac::{Hmac, Mac};
-use jwt::VerifyWithKey;
-use sha2::Sha256;
-use std::{cmp::Ordering, collections::BTreeMap, str::FromStr, time::Duration};
+use crate::utils::{response::JsonResponseWithLengthOfQueue};
+use hmac::{Mac};
+
+
+use std::{str::FromStr, time::Duration};
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+
 use crate::utils::check_login::check_login;
 use crate::utils::{response::JsonResponse};
 use awc::{Connector, Client};
@@ -16,9 +16,9 @@ use crate::models::user_model::*;
 use crate::application_data::*;
 use mongodb::bson::oid::ObjectId;
 use base64::prelude::*;
-use crate::utils::get_cookie::*;
+
 use crate::utils::structs_to_serialize_deserialize::*;
-use serde_json;
+
 use crate::utils::convert_to_object_id::convert_to_object_id;
 
 

@@ -14,7 +14,7 @@ use sha2::Sha256;
 use std::collections::BTreeMap;
 
 // mongodb
-use mongodb::{bson::{doc, Document, to_document}, Collection};
+use mongodb::{bson::{doc, Document}, Collection};
 use mongodb::bson;
 
 /*
@@ -29,7 +29,7 @@ struct LoginData {
 #[post("/login")]
 async fn post_login(req: HttpRequest, form: web::Form<LoginData>) -> impl Responder {
     let email = form.email.as_str();
-    let password = form.password.as_str();
+    let _password = form.password.as_str();
 
     // access the database
     let app_data = req.app_data::<Data<ApplicationData>>();
@@ -138,7 +138,7 @@ async fn post_signup(req: HttpRequest, form: web::Form<SignupData>) -> impl Resp
     println!("{:?}", result);
 
     let inserted_id = bson::oid::ObjectId::to_hex(result.inserted_id.as_object_id().unwrap());
-    let string_body = String::from("Thank you for signin up, this is your OBject Id:") + inserted_id.as_str();
+    let _string_body = String::from("Thank you for signin up, this is your OBject Id:") + inserted_id.as_str();
     // send the response, with the proper json
     let response = JsonResponseForSigningUp::redirect_to_login(String::from("jdjd"), inserted_id);
     HttpResponse::Ok()

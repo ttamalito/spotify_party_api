@@ -5,15 +5,15 @@ pub mod application_data;
 pub mod utils;
 pub mod models;
 use actix_web::web::Data;
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder, middleware};
-use controllers::base_controller::{self, hello};
+use actix_web::{web, App, HttpResponse, HttpServer, Responder, middleware};
+use controllers::base_controller::{hello};
 use controllers::base_controller::*;
 use controllers::auth_controller::*;
 use controllers::party_controller::*;
 use controllers::playback_controller::*;
 use application_data::ApplicationData;
 
-use database_connection::{connect_to_db, DB};
+use database_connection::{connect_to_db};
 
 
 
@@ -50,7 +50,7 @@ async fn main() -> std::io::Result<()> {
             .route("/hey", web::get().to(dummy))
     })
     .workers(4)
-    .on_connect(|a, b| {println!("{}", String::from("A new Connection!"))})
+    .on_connect(|_a, _b| {println!("{}", String::from("A new Connection!"))})
     .bind(("127.0.0.1", 8080))?
     .run()
     .await

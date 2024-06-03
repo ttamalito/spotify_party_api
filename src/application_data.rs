@@ -1,7 +1,7 @@
 
 
 use crate::database_connection::DB;
-use mongodb::{Client, Database};
+use mongodb::{Database};
 /// 
 pub struct ApplicationData {
     database_box: Box<DB>

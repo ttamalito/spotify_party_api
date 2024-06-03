@@ -1,20 +1,20 @@
 use serde::{Deserialize, Serialize};
-use actix_web::{get, http::{header::{ContentType, HeaderValue}, StatusCode}, post, put, web::{self, Data, Json, Redirect}, HttpRequest, HttpResponse, Responder};
-use jwt::Store;
-use crate::utils::{check_login::check_login, check_party_exists_and_user_is_owner, requests_to_api::inital_check_for_users, response};
+use actix_web::{get, post, web::{self, Data}, HttpRequest, HttpResponse, Responder};
+
+use crate::utils::{check_login::check_login};
 use crate::utils::{response::JsonResponse};
-use awc::{Connector, Client};
-use openssl::ssl::{SslConnector, SslMethod};
-use hmac::{Hmac, Mac};
-use jwt::VerifyWithKey;
-use sha2::Sha256;
-use mongodb::bson::oid::ObjectId;
-use std::{cmp::Ordering, collections::BTreeMap, str::FromStr, time::Duration};
-use crate::utils::get_cookie::*;
-use crate::models::party_model::*;
-use crate::models::user_model::*;
+
+
+use hmac::{Mac};
+
+
+
+
+
+
+
 use crate::application_data::*;
-use crate::utils::convert_to_object_id::convert_to_object_id;
+
 use crate::utils::check_party_exists_and_user_is_owner::*;
 use crate::utils::build_headers::build_authorization_header::*;
 use crate::utils::requests_to_api::put_request_empty::put_request_emtpy_body;
@@ -47,7 +47,7 @@ struct MainError2 {
 
 /// Controller to pause the playback
 #[post("/pausePlayback")]
-async fn pause_playback(req: HttpRequest, form: web::Form<PausePlaybackForm> ) -> impl Responder {
+async fn pause_playback(req: HttpRequest, _form: web::Form<PausePlaybackForm> ) -> impl Responder {
     // check that the user is logged in
     let (logged, user_id) = check_login(req.headers());
 
@@ -57,7 +57,7 @@ async fn pause_playback(req: HttpRequest, form: web::Form<PausePlaybackForm> ) -
     }
 
     // check that the user owns the party and that the party exists
-    let (is_owner, response) = check_party_exists_and_user_is_owner_method(&user_id, req.app_data::<Data<ApplicationData>>()).await;
+    let (_is_owner, _response) = check_party_exists_and_user_is_owner_method(&user_id, req.app_data::<Data<ApplicationData>>()).await;
     /*
         let user_id = ObjectId::parse_str(user_id).expect("Should parse object id");
 

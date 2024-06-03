@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::application_data::ApplicationData;
 use crate::utils::collections_enum::*;
 
-use mongodb::bson::{doc, Document};
+use mongodb::bson::{doc};
 use mongodb::Collection;
 
 pub struct PartyCollection {
