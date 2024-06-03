@@ -73,7 +73,9 @@ struct CreatePartyData {
 struct AccessToken {
     access_token: String,
     token_type: String,
-    expires_in: i32
+    expires_in: i32,
+    scope: String,
+    refresh_token: String
 }
 
 
@@ -122,19 +124,19 @@ async fn request_token(req: HttpRequest, form: web::Form<CreatePartyData>) -> im
     // the user is logged in and doesn't have a party, send the request to get the access token
     let to_concat = format!("{}{}{}{}", "code=", form.code, "&grant_type=", form.grant_type);
     let req_body = format!("{}{}{}", to_concat, "&redirect_uri=", form.redirect_uri);
-    println!("{}", &req_body);
+    //println!("{}", &req_body);
     let authorization_header = format!("{}{}{}", form.id, ":", form.secret);
-    println!("{}", &authorization_header);
+    //println!("{}", &authorization_header);
     let base64_authorization_header = format!("{}{}", "Basic ", BASE64_STANDARD.encode(authorization_header));
     // send the request
     let builder = SslConnector::builder(SslMethod::tls()).unwrap();
 
-    let client = Client::builder()
-        .connector(Connector::new().openssl(builder.build()).timeout(Duration::from_secs(20)))
+    let client = Client::builder().timeout(Duration::from_secs(50))
+        .connector(Connector::new().openssl(builder.build()).timeout(Duration::from_secs(50)))
         .finish();
 
     //println!("{}", req_body);
-    let mut response = client.post("https://accounts.spotify.com/api/token").timeout(Duration::from_secs(20)).
+    let mut response = client.post("https://accounts.spotify.com/api/token").timeout(Duration::from_secs(50)).
     insert_header(("Content-Type", "application/x-www-form-urlencoded"))
     .insert_header(("Authorization", base64_authorization_header))
     .send_body(req_body).await.unwrap();
@@ -144,6 +146,8 @@ async fn request_token(req: HttpRequest, form: web::Form<CreatePartyData>) -> im
     println!("Access token{}", payload.access_token);
     println!("{}", payload.token_type);
     println!("{}", payload.expires_in);
+    println!("Scope: {}", payload.scope);
+    println!("Refresh TOken: {}", payload.refresh_token);
     //println!("{}", form.id);
     //println!("{}", form.secret);
     // create a party and save it to the data base

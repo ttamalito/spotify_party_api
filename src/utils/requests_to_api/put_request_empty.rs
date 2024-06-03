@@ -22,10 +22,15 @@ pub async fn put_request_emtpy_body(auth_header: &str, url: &str) -> bool {
             //println!("{}", req_body);
             let mut response = client.put(url).timeout(Duration::from_secs(45)).
             insert_header(("Authorization", auth_header))
-            .send().await.unwrap();
-            println!("{:?}", response.headers());
+            .send().await;
+            if response.is_err() {
+                println!("{}", String::from("Timeout in put request"));
+                return false;
+            }
+            let mut response = response.unwrap();
+            //println!("{:?}", response.headers());
             // check the response code
-            println!("{:?}", response.version());
+            //println!("{:?}", response.version());
             println!("{:?}", response.status());
 
             if response.status() == StatusCode::NO_CONTENT {

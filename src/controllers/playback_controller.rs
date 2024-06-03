@@ -298,7 +298,7 @@ async fn modify_volume(req: HttpRequest) -> impl Responder {
     let auth_header = possible_auth_header.unwrap();
     let auth_header = auth_header.as_str();
     // send the request to the api
-    let response_result = put_request_emtpy_body(auth_header, "https://api.spotify.com/v1/me/player/volume?volume_percent=75").await;
+    let response_result = put_request_emtpy_body(auth_header, "https://api.spotify.com/v1/me/player/volume?volume_percent=2").await;
     if response_result {
         return HttpResponse::NoContent().finish();
     }

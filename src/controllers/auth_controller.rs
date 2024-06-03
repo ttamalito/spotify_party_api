@@ -44,11 +44,11 @@ async fn post_login(req: HttpRequest, form: web::Form<LoginData>) -> impl Respon
     let collection: Collection<Document> = app_data.unwrap().as_ref().get_database().unwrap().collection(get_collection(Collections::USERS).as_str());
     // now find the corresponding entry
     let filter = doc! {"email": email};
-    println!("{}", email);
+    //println!("{}", email);
     let result = collection.find_one(filter, None).await;
     let serialized_doc = result.as_ref().unwrap();
     let user_struct: UserDocument = bson::from_bson(bson::Bson::Document(serialized_doc.as_ref().unwrap().to_owned())).expect("Could not deserialize it");
-    println!("{:?}", &user_struct);
+    //println!("{:?}", &user_struct);
     let what = result.as_ref();
     let que = what.unwrap();
     if result.is_ok() {

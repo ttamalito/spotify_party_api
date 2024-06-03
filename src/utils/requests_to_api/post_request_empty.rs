@@ -23,9 +23,9 @@ pub async fn post_request_emtpy_body(auth_header: &str, url: &str) -> bool {
             let mut response = client.post(url).timeout(Duration::from_secs(45)).
             insert_header(("Authorization", auth_header))
             .send().await.unwrap();
-            println!("{:?}", response.headers());
+            //println!("{:?}", response.headers());
             // check the response code
-            println!("{:?}", response.version());
+            //println!("{:?}", response.version());
             println!("{:?}", response.status());
 
             if response.status() == StatusCode::NO_CONTENT {
