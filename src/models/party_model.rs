@@ -109,20 +109,22 @@ pub struct Party {
 pub struct PartyAccessToken {
     access_token: String,
     token_type: String,
-    expires_in: i32
+    expires_in: i32,
+    refresh_token: String,
+    scope: String
 }
 
 
 impl Party {
     /// Constructor to create a completely new party (without ObjectId)
-    pub fn new(owner: String, access_token: String, token_type: String, expires_in: i32) -> Self {
+    pub fn new(owner: String, access_token: String, token_type: String, expires_in: i32, refresh_token: String, scope: String) -> Self {
         // convert the string to object id
         let object_id = ObjectId::parse_str(owner).expect("Should convert string to object id");
         Party {
             _id: ObjectId::new(),
             members: vec![],
             owner: object_id,
-            access_token: PartyAccessToken {access_token, token_type, expires_in},
+            access_token: PartyAccessToken {access_token, token_type, expires_in, refresh_token, scope},
             requested_to_join: vec![]
         }
     } // end of new

@@ -1,4 +1,4 @@
-use actix_web::{get, post, put, web::{self, Data}, HttpRequest, HttpResponse, Responder};
+use actix_web::{get, post, put, web::{self, scope, Data}, HttpRequest, HttpResponse, Responder};
 use jwt::Store;
 use crate::utils::{response::JsonResponseWithLengthOfQueue};
 use hmac::{Mac};
@@ -151,7 +151,7 @@ async fn request_token(req: HttpRequest, form: web::Form<CreatePartyData>) -> im
     //println!("{}", form.id);
     //println!("{}", form.secret);
     // create a party and save it to the data base
-    let party = Party::new(user_id.clone(), payload.access_token.clone(), payload.token_type.clone(), payload.expires_in.clone());
+    let party = Party::new(user_id.clone(), payload.access_token.clone(), payload.token_type.clone(), payload.expires_in.clone(), payload.refresh_token.clone(), payload.scope.clone());
     let collection = PartyCollection::new(req.app_data::<Data<ApplicationData>>());
     // save it to the database
     let party_id = collection.save_party(party).await;
