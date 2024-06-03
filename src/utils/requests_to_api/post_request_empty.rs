@@ -15,7 +15,7 @@ pub async fn post_request_emtpy_body(auth_header: &str, url: &str) -> bool {
             // send the request to the api
             let builder = SslConnector::builder(SslMethod::tls()).unwrap();
 
-            let client = Client::builder()
+            let client = Client::builder() // if you get Timeout add .timeout(Duration::from_secs(50)) to the client, see party_controller.request_token 134
                 .connector(Connector::new().openssl(builder.build()).timeout(Duration::from_secs(54)))
                 .finish();
         
