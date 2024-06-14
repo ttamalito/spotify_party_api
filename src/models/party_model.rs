@@ -91,6 +91,24 @@ impl PartyCollection {
         } 
         false
     }
+
+    /// Set a new access token and all its parts
+    pub async fn set_access_token_data(&self, party_id: ObjectId, data: PartyAccessToken) -> bool {
+        let filter = doc! {"_id": party_id};
+        let data_as_object = doc! {    "access_token": data.access_token,
+            "token_type": data.token_type,
+            "expires_in": data.expires_in,
+            "refresh_token": data.refresh_token,
+            "scope": data.scope};
+        let data_as_doc = doc! {"access_token": data_as_object};
+        let update = doc! {"$set" : data_as_doc};
+        let result = self.collection.update_one(filter, update, None).await.expect("Should update Document");
+        if result.modified_count == 1 {
+            return true;    
+        }
+        // else, it was not successful
+        false
+    } // end of set_access_token_data
 } // methods for PartyCollection
 
 /// Struct to represent a party
