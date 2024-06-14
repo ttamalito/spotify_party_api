@@ -1,6 +1,6 @@
 use base64::prelude::*;
 
-use crate::{controllers::party_controller::AccessToken, models::party_model::PartyCollection};
+use crate::{controllers::party_controller::AccessToken, models::party_model::{Party, PartyAccessToken, PartyCollection}};
 use awc::{Client, Connector};
 use mongodb::bson::oid::ObjectId;
 use openssl::ssl::{SslConnector, SslMethod};
@@ -68,7 +68,16 @@ async fn refresh_token(
     println!("Refresh TOken: {}", payload.refresh_token);
 
     // add the new token to the database
-    
+    let party = party.unwrap();
+    let party_id = party._id;
+    let party_access_token_struct = PartyAccessToken {
+        access_token: payload.access_token,
+        token_type: payload.token_type,
+        expires_in: payload.expires_in,
+        refresh_token: payload.refresh_token,
+        scope: payload.scope
+    };
+    party_collection.set_access_token_data(party_id, party_access_token_struct).await;
 
     true
 }
