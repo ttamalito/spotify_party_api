@@ -77,7 +77,8 @@ async fn refresh_token(
         refresh_token: payload.refresh_token,
         scope: payload.scope
     };
-    party_collection.set_access_token_data(party_id, party_access_token_struct).await;
+    let insertion_result = party_collection.set_access_token_data(party_id, party_access_token_struct).await;
 
-    true
+    // true or false
+    insertion_result
 }
