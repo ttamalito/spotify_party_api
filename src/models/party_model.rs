@@ -155,4 +155,9 @@ impl Party {
     pub fn get_requested_to_join_as_ref(&self) -> &Vec<ObjectId> {
         return &self.requested_to_join;
     }
+
+    /// Retreives the access token from a Party struct
+    pub fn get_access_token(&self) -> String {
+        return self.access_token.access_token.clone();
+    }
 }
