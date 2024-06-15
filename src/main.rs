@@ -4,6 +4,7 @@ pub mod database_connection;
 pub mod application_data;
 pub mod utils;
 pub mod models;
+pub mod constants;
 use actix_web::web::Data;
 use actix_web::{web, App, HttpResponse, HttpServer, Responder, middleware};
 use controllers::base_controller::{hello};
