@@ -15,12 +15,12 @@ pub async fn put_request_emtpy_body(auth_header: &str, url: &str) -> bool {
             // send the request to the api
             let builder = SslConnector::builder(SslMethod::tls()).unwrap();
 
-            let client = Client::builder() // if you get Timeout add .timeout(Duration::from_secs(50)) to the client, see party_controller.request_token 138
+            let client = Client::builder().timeout(Duration::from_secs(50)) // if you get Timeout add .timeout(Duration::from_secs(50)) to the client, see party_controller.request_token 134s
                 .connector(Connector::new().openssl(builder.build()).timeout(Duration::from_secs(54)))
                 .finish();
         
             //println!("{}", req_body);
-            let response = client.put(url).timeout(Duration::from_secs(45)).
+            let mut response = client.put(url).timeout(Duration::from_secs(45)).
             insert_header(("Authorization", auth_header))
             .send().await;
             if response.is_err() {

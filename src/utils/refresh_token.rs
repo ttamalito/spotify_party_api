@@ -1,27 +1,37 @@
+use actix_web::{web::Data, HttpRequest};
 use base64::prelude::*;
 
-use crate::{controllers::party_controller::AccessToken, models::party_model::{Party, PartyAccessToken, PartyCollection}};
+use crate::{application_data::ApplicationData, controllers::party_controller::AccessToken, models::party_model::{Party, PartyAccessToken, PartyCollection}};
 use awc::{Client, Connector};
 use mongodb::bson::oid::ObjectId;
 use openssl::ssl::{SslConnector, SslMethod};
 use serde::{Deserialize, Serialize};
 use std::{str::FromStr, time::Duration};
+use crate::utils::check_login::check_login;
+use crate::constants::*;
+
 /// Refreshes a token
-/// * token - The Refresh Token saved in the database
-/// * code - The code that was received when the first access token was requested
-async fn refresh_token(
-    token: String,
-    client_id: &str,
-    client_secret: &str,
-    user_id: ObjectId,
-    party_collection: PartyCollection,
+/// By Getting all the necessary data from the database
+pub async fn refresh_token(
+    req: HttpRequest
 ) -> bool {
     // get the party from the database
+    let party_collection = PartyCollection::new(req.app_data::<Data<ApplicationData>>());
+    // get the user id from the cookies
+    let (logged_id, user_id) = check_login(req.headers());
+    // convert the user_id to an object id
+    let user_id = ObjectId::parse_str(user_id).ok().unwrap();
     let party = party_collection.query_by_owner(user_id).await;
 
     if party.is_none() {
         return false; // the user does not own a party
     }
+
+    let party = party.unwrap();
+    let token = party.access_token.refresh_token;
+
+    let client_id = CLIENT_ID;
+    let client_secret = CLIENT_SECRET;
 
     // create the request body
     let req_body = format!(
@@ -68,7 +78,6 @@ async fn refresh_token(
     println!("Refresh TOken: {}", payload.refresh_token);
 
     // add the new token to the database
-    let party = party.unwrap();
     let party_id = party._id;
     let party_access_token_struct = PartyAccessToken {
         access_token: payload.access_token,
