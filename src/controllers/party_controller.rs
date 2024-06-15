@@ -70,12 +70,12 @@ struct CreatePartyData {
 
 /// Struct to deserialize the data of the spotify api, for the request token
 #[derive(Deserialize)]
-struct AccessToken {
-    access_token: String,
-    token_type: String,
-    expires_in: i32,
-    scope: String,
-    refresh_token: String
+pub struct AccessToken {
+    pub access_token: String,
+    pub token_type: String,
+    pub expires_in: i32,
+    pub scope: String,
+    pub refresh_token: String
 }
 
 
