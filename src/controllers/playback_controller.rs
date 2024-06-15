@@ -1,3 +1,4 @@
+use awc::http::StatusCode;
 use serde::{Deserialize, Serialize};
 use actix_web::{get, post, web::{self, Data}, HttpRequest, HttpResponse, Responder};
 
@@ -20,7 +21,8 @@ use crate::utils::build_headers::build_authorization_header::*;
 use crate::utils::requests_to_api::put_request_empty::put_request_emtpy_body;
 use crate::utils::requests_to_api::post_request_empty::post_request_emtpy_body;
 use crate::utils::requests_to_api::inital_check_for_users::intial_checkup;
-
+use crate::utils::refresh_token::refresh_token;
+use crate::utils::requests_to_api::refresh_post_empty_body::refresh_and_send_post_empty_body;
 
 // struct for pausePlayback
 #[derive(Deserialize, Serialize)]
@@ -57,40 +59,14 @@ async fn pause_playback(req: HttpRequest, _form: web::Form<PausePlaybackForm> ) 
     }
 
     // check that the user owns the party and that the party exists
-    let (_is_owner, _response) = check_party_exists_and_user_is_owner_method(&user_id, req.app_data::<Data<ApplicationData>>()).await;
-    /*
-        let user_id = ObjectId::parse_str(user_id).expect("Should parse object id");
-
-    let party_collection = PartyCollection::new(req.app_data::<Data<ApplicationData>>());
-    let party = party_collection.query_by_owner(user_id).await;
-    if party.is_none() {
-        return HttpResponse::Conflict().json(JsonResponse::new(false, false, String::from("")));
-    }
-    // else there is a party, check that the user is the owner of that party
-    let user_collection = User::new(req.app_data::<Data<ApplicationData>>());
-    let user = user_collection.query_user_by_id(user_id).await;
-    if user.is_none() {
-        return HttpResponse::Conflict().json(JsonResponse::new(false, false, String::from("")));
-    } else {
-        let user = user.unwrap();
-        let owned = user.owned_party;
-        if owned.is_none() {
-            return HttpResponse::Conflict().json(JsonResponse::new(false, false, String::from("")));
-        } else if owned.unwrap().to_string() != form.party_id {
-            return HttpResponse::Conflict().json(JsonResponse::new(false, false, String::from("Not the owner of the pary")));
-        }
-    } */
+    let (_is_owner, _response, possible_access_token) = check_party_exists_and_user_is_owner_method(&user_id, req.app_data::<Data<ApplicationData>>()).await;
+    
 
     // now send the corresponding https request to pause the playback
     // authorization header
-    /*
-        let auth_token = get_authorization_token_cookie(req.headers());
-    if auth_token.is_none() {
-        return HttpResponse::Unauthorized().json(JsonResponse::new(false, true, String::from("http://localhost:3000/startParty"))); // TODO --- change the url to redirect, to refresh the token
-    }
-    println!("{:?}", auth_token); */
+
     // there is a token, create the &str
-    let (auth_token_exists, auth_header) = get_authorization_header(req.headers());
+    let (auth_token_exists, auth_header) = get_authorization_header(req.headers(), possible_access_token);
     // check that the token existed in the cookies
     if !auth_token_exists {
         // there is no token
@@ -100,28 +76,8 @@ async fn pause_playback(req: HttpRequest, _form: web::Form<PausePlaybackForm> ) 
 
     let auth_header = auth_header.as_str();
     let response_result = put_request_emtpy_body(auth_header, "https://api.spotify.com/v1/me/player/pause").await;
-    /*
-        let builder = SslConnector::builder(SslMethod::tls()).unwrap();
 
-    let client = Client::builder()
-        .connector(Connector::new().openssl(builder.build()).timeout(Duration::from_secs(54)))
-        .finish();
 
-    //println!("{}", req_body);
-    let mut response = client.put("https://api.spotify.com/v1/me/player/pause").timeout(Duration::from_secs(45)).
-    insert_header(("Authorization", auth_header))
-    .send().await.unwrap();
-    println!("{:?}", response.headers());
-    // check the response code
-    println!("{:?}", response.version());
-    println!("{:?}", response.status());
-    if response.status() == StatusCode::NO_CONTENT {
-        // all good
-
-        
-        return HttpResponse::NoContent().finish();
-    }
-     */
     //let payload = response.json::<serde_json::Value>().await.expect("What ever");
     if response_result {
         return HttpResponse::NoContent().finish();
@@ -130,6 +86,7 @@ async fn pause_playback(req: HttpRequest, _form: web::Form<PausePlaybackForm> ) 
     HttpResponse::BadRequest().finish()
 } // end of pause_playback
 
+/// Controller to resume Playback
 #[get("/resumePlayback")]
 async fn resume_playback(req: HttpRequest) -> impl Responder {
 
@@ -143,14 +100,14 @@ async fn resume_playback(req: HttpRequest) -> impl Responder {
         }
 
         // check that the user is the owner of the party
-        let (is_owner, response) = check_party_exists_and_user_is_owner_method(&user_id, req.app_data::<Data<ApplicationData>>()).await;
+        let (is_owner, response, possible_access_token) = check_party_exists_and_user_is_owner_method(&user_id, req.app_data::<Data<ApplicationData>>()).await;
 
         if !is_owner {
             return response; // if not the owenr send the corresponding response
         }
 
         // get the authorization header
-        let (exists_token, auth_header) = get_authorization_header(req.headers());
+        let (exists_token, auth_header) = get_authorization_header(req.headers(), possible_access_token);
         if !exists_token {
             // there is no token
             return HttpResponse::Unauthorized().
@@ -162,28 +119,7 @@ async fn resume_playback(req: HttpRequest) -> impl Responder {
         let auth_header = auth_header.as_str();
         // send the request to the api
         let response_result = put_request_emtpy_body(auth_header, "https://api.spotify.com/v1/me/player/play").await;
-        /*
-        let builder = SslConnector::builder(SslMethod::tls()).unwrap();
-
-        let client = Client::builder()
-            .connector(Connector::new().openssl(builder.build()).timeout(Duration::from_secs(54)))
-            .finish();
-    
-        //println!("{}", req_body);
-        let mut response = client.put("https://api.spotify.com/v1/me/player/play").timeout(Duration::from_secs(45)).
-        insert_header(("Authorization", auth_header))
-        .send().await.unwrap();
-        println!("{:?}", response.headers());
-        // check the response code
-        println!("{:?}", response.version());
-        println!("{:?}", response.status());
-        if response.status() == StatusCode::NO_CONTENT {
-            // all good
-    
-            
-            return HttpResponse::NoContent().finish();
-        } */
-        //let payload = response.json::<serde_json::Value>().await.expect("What ever");
+        
         if response_result {
             // all good 
             return HttpResponse::NoContent().finish();
@@ -193,34 +129,12 @@ async fn resume_playback(req: HttpRequest) -> impl Responder {
 
 }
 
+
 #[get("/playNext")]
 async fn play_next(req: HttpRequest) -> impl Responder {
-
-    /*
-        let (logged, user_id) = check_login(req.headers());
-
-    if !logged {
-        // not logged in
-        return HttpResponse::Unauthorized().json(JsonResponse::redirect_to_login());
-    }
-
-    // check that the user is the owner of the party
-    let (is_owner, response) = check_party_exists_and_user_is_owner_method(&user_id, req.app_data::<Data<ApplicationData>>()).await;
-
-    if !is_owner {
-        return response; // if not the owenr send the corresponding response
-    }
-
-    // get the authorization header
-    let (exists_token, auth_header) = get_authorization_header(req.headers());
-    if !exists_token {
-        // there is no token
-        return HttpResponse::Unauthorized().
-        json(JsonResponse::new(false, true, String::from("http://localhost:3000/startParty")));  // TODO --- change the url to redirect, to refresh the token
-    } */
-
+    let req_clone = req.clone();
+    
     let (response, possible_auth_header) = intial_checkup(req).await;
-
     // check if there is an authorization header
     if possible_auth_header.is_none() {
         // not authorized
@@ -229,36 +143,17 @@ async fn play_next(req: HttpRequest) -> impl Responder {
     // convert the auth header as a str
     let auth_header = possible_auth_header.unwrap();
     let auth_header = auth_header.as_str();
+    let url = "https://api.spotify.com/v1/me/player/next";
     // send the request to the api
-    let response_result = post_request_emtpy_body(auth_header, "https://api.spotify.com/v1/me/player/next").await;
-    /*
-        let builder = SslConnector::builder(SslMethod::tls()).unwrap();
+    let response_result = post_request_emtpy_body(auth_header, url).await;
 
-    let client = Client::builder()
-        .connector(Connector::new().openssl(builder.build()).timeout(Duration::from_secs(54)))
-        .finish();
-
-    //println!("{}", req_body);
-    let mut response = client.post("https://api.spotify.com/v1/me/player/next").timeout(Duration::from_secs(45)).
-    insert_header(("Authorization", auth_header))
-    .send().await.unwrap();
-    println!("{:?}", response.headers());
-    // check the response code
-    println!("{:?}", response.version());
-    println!("{:?}", response.status());
-    if response.status() == StatusCode::NO_CONTENT {
-        // all good
-
-        
+    if response_result.0 {
         return HttpResponse::NoContent().finish();
-    }
-    //let payload = response.json::<serde_json::Value>().await.expect("What ever");
-    let payload = response.json::<MainError>().await.expect("Should deserialize");
-    println!("{:?}", payload);
-     */
-
-    if response_result {
-        return HttpResponse::NoContent().finish();
+    } else if response_result.1 == StatusCode::UNAUTHORIZED {
+        // try to refresh the token and send the request again
+        let (_result, response_to_send) = refresh_and_send_post_empty_body(req_clone, auth_header, url).await;
+        // to be honest, there is not need to read the result, just send the response
+        return response_to_send;
     }
 
     HttpResponse::BadRequest().finish()
@@ -266,6 +161,7 @@ async fn play_next(req: HttpRequest) -> impl Responder {
 
 #[get("/playPrevious")]
 async fn play_previous(req: HttpRequest) -> impl Responder {
+    let req_clone = req.clone();
     let (response, possible_auth_header) = intial_checkup(req).await;
 
     // check if there is an authorization header
@@ -277,9 +173,16 @@ async fn play_previous(req: HttpRequest) -> impl Responder {
     let auth_header = possible_auth_header.unwrap();
     let auth_header = auth_header.as_str();
     // send the request to the api
-    let response_result = post_request_emtpy_body(auth_header, "https://api.spotify.com/v1/me/player/previous").await;
-    if response_result {
+    let url = "https://api.spotify.com/v1/me/player/previous";
+    let response_result = post_request_emtpy_body(auth_header, url).await;
+    if response_result.0 {
         return HttpResponse::NoContent().finish();
+    } else if response_result.1 == StatusCode::UNAUTHORIZED {
+        // try to refresh the token and send the request again
+        let (_result, response_to_send) = refresh_and_send_post_empty_body(req_clone, auth_header, url).await;
+        // to be honest, there is not need to read the result, just send the response
+        return response_to_send;
+
     }
 
     HttpResponse::BadRequest().finish()

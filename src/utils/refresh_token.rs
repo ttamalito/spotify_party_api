@@ -10,6 +10,14 @@ use std::{str::FromStr, time::Duration};
 use crate::utils::check_login::check_login;
 use crate::constants::*;
 
+/// Struct to deserialize the Reponse from the refresh token
+#[derive(Deserialize, Default)]
+pub struct RefreshToken {
+    #[serde(default)]
+    refresh_token: AccessToken
+}
+
+
 /// Refreshes a token
 /// By Getting all the necessary data from the database
 pub async fn refresh_token(
@@ -29,6 +37,7 @@ pub async fn refresh_token(
 
     let party = party.unwrap();
     let token = party.access_token.refresh_token;
+    let refresh_token = token.clone();
 
     let client_id = CLIENT_ID;
     let client_secret = CLIENT_SECRET;
@@ -72,10 +81,11 @@ pub async fn refresh_token(
     println!("{:?}", response.status());
     let payload = response.json::<AccessToken>().await.unwrap();
     println!("Access token{}", payload.access_token);
-    println!("{}", payload.token_type);
-    println!("{}", payload.expires_in);
-    println!("Scope: {}", payload.scope);
-    println!("Refresh TOken: {}", payload.refresh_token);
+    println!("Payload: {:?}", payload);
+    //println!("{}", payload.token_type);
+    //println!("{}", payload.refresh_token.expires_in);
+    //println!("Scope: {}", payload.refresh_token.scope);
+    //println!("Refresh TOken: {}", payload.refresh_token.refresh_token);
 
     // add the new token to the database
     let party_id = party._id;
@@ -83,7 +93,7 @@ pub async fn refresh_token(
         access_token: payload.access_token,
         token_type: payload.token_type,
         expires_in: payload.expires_in,
-        refresh_token: payload.refresh_token,
+        refresh_token: refresh_token, // spotify is not sending a new refresh token!!!1
         scope: payload.scope
     };
     let insertion_result = party_collection.set_access_token_data(party_id, party_access_token_struct).await;
