@@ -17,14 +17,14 @@ pub async fn intial_checkup(req: HttpRequest) -> (HttpResponse, Option<String>) 
     }
 
     // check that the user is the owner of the party
-    let (is_owner, response) = check_party_exists_and_user_is_owner_method(&user_id, req.app_data::<Data<ApplicationData>>()).await;
-
+    let (is_owner, response, possible_access_token) = check_party_exists_and_user_is_owner_method(&user_id, req.app_data::<Data<ApplicationData>>()).await;
     if !is_owner {
         return (response, None); // if not the owenr send the corresponding response
     }
 
     // get the authorization header
-    let (exists_token, auth_header) = get_authorization_header(req.headers());
+    let (exists_token, auth_header) = get_authorization_header(req.headers(), possible_access_token);
+    println!("There is a token: {} line 27 initial_check_for_users.rs", exists_token);
     if !exists_token {
         // there is no token
         return (HttpResponse::Unauthorized().
