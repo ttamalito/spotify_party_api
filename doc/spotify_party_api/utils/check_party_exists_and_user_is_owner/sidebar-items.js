@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["check_party_exists_and_user_is_owner_method"]};

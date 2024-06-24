@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["ErrorSpotify","MainError","MainError2","PausePlaybackForm","modify_volume","pause_playback","play_next","play_previous","resume_playback"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["party_model","user_model"]};

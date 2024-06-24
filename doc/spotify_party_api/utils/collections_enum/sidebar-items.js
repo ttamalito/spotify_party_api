@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Collections"],"fn":["get_collection"]};

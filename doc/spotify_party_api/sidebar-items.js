@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["dummy","main"],"mod":["application_data","constants","controllers","database_connection","models","utils"]};

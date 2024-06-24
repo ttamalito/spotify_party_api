@@ -1,0 +1,1 @@
+window.ALL_CRATES = ["spotify_party_api"];
