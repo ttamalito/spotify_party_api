@@ -11,7 +11,7 @@ use std::{time::Duration};
 use super::errors_spotify::*;
 
 
-pub async fn put_request_emtpy_body(auth_header: &str, url: &str) -> bool {
+pub async fn put_request_emtpy_body(auth_header: &str, url: &str) -> (bool, StatusCode) {
             // send the request to the api
             let builder = SslConnector::builder(SslMethod::tls()).unwrap();
 
@@ -25,23 +25,18 @@ pub async fn put_request_emtpy_body(auth_header: &str, url: &str) -> bool {
             .send().await;
             if response.is_err() {
                 println!("{}", String::from("Timeout in put request"));
-                return false;
+                return (false, StatusCode::INTERNAL_SERVER_ERROR);
             }
             let mut response = response.unwrap();
-            //println!("{:?}", response.headers());
-            // check the response code
-            //println!("{:?}", response.version());
-            println!("{:?}", response.status());
-
             if response.status() == StatusCode::NO_CONTENT {
                 // all good
-                return true;
+                return (true, response.status());
             }
 
                 
     //let payload = response.json::<serde_json::Value>().await.expect("What ever");
     let payload = response.json::<MainError>().await.expect("Should deserialize");
     println!("{:?}", payload);
-    false
+    (false, response.status())
 
 }
