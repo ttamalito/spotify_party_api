@@ -48,6 +48,7 @@ async fn main() -> std::io::Result<()> {
             .service(modify_volume) // modify the volume
             .service(join_party) // GET route to join a party
             .service(acceptIntoParty) // accept a user into a party
+            .service(user_has_party) // check if the user has a party
             .route("/hey", web::get().to(dummy))
     })
     .workers(4)
