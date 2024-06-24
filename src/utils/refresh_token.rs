@@ -82,10 +82,7 @@ pub async fn refresh_token(
     let payload = response.json::<AccessToken>().await.unwrap();
     println!("Access token{}", payload.access_token);
     println!("Payload: {:?}", payload);
-    //println!("{}", payload.token_type);
-    //println!("{}", payload.refresh_token.expires_in);
-    //println!("Scope: {}", payload.refresh_token.scope);
-    //println!("Refresh TOken: {}", payload.refresh_token.refresh_token);
+
 
     // add the new token to the database
     let party_id = party._id;
