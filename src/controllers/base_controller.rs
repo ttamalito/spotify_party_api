@@ -1,8 +1,10 @@
 use actix_web::{get, web::{Data}, HttpRequest, HttpResponse, Responder};
 use crate::application_data::ApplicationData;
-
-// import mongodb
-
+use crate::utils::check_login::check_login;
+use crate::utils::structs_to_serialize_deserialize::ResponseUserHasParty;
+use crate::models::party_model::*;
+use mongodb::bson::oid::ObjectId;
+use crate::utils::check_party_exists_and_user_is_owner::check_party_exists_and_user_is_owner_method;
 
 // controller for the main page
 #[get("/")]
@@ -45,4 +47,36 @@ async fn foo(req: HttpRequest) -> impl Responder {
     println!("{}", String::from("You have sent the cookie"));
    }
     HttpResponse::Ok().body("Te amo")
+}
+/// This function checks if the user is logged in and if they have a party.
+///
+/// # Arguments
+///
+/// * `req` - An instance of HttpRequest, used to access headers.
+///
+/// # Returns
+///
+/// * HttpResponse - Returns a JSON response with a boolean indicating if the user has a party and the party id if it exists.
+#[get("/userHasParty")]
+async fn user_has_party(req: HttpRequest) -> impl Responder {
+    // see if the user is logged in
+    let (logged, user_id) = check_login(req.headers());
+    if !logged {
+        return HttpResponse::Ok().json(ResponseUserHasParty {
+            result: false,
+            party_id: String::from("")
+        });
+    }
+    // see if the user has a party
+    let (owns_party, response, _access_token, party_id) = check_party_exists_and_user_is_owner_method(user_id.as_str(), req.app_data::<Data<ApplicationData>>()).await;
+
+    if !owns_party {
+        return response;
+    }
+
+    let party_id = party_id.unwrap();
+    HttpResponse::Ok().json(ResponseUserHasParty {
+        result: true,
+        party_id
+    })
 }
