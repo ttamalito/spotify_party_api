@@ -160,4 +160,5 @@ impl Party {
     pub fn get_access_token(&self) -> String {
         return self.access_token.access_token.clone();
     }
+
 }
