@@ -14,11 +14,9 @@ pub fn get_authorization_header(headers: &HeaderMap, possible_access_token: Opti
     if auth_token.is_none() && possible_access_token.is_some() {
         auth_token = possible_access_token;
     }
-    println!("line 17 build_authorization_headers {:?}", auth_token);
     // there is a token, create the &str
     let auth_header = format!("{}{}", "Bearer ", auth_token.unwrap());
-    //let auth_header = auth_header.as_str();
-    println!("{:?}", &auth_header);
+
 
     (true, auth_header)
 }
