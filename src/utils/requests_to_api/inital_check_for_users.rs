@@ -17,7 +17,7 @@ pub async fn intial_checkup(req: HttpRequest) -> (HttpResponse, Option<String>) 
     }
 
     // check that the user is the owner of the party
-    let (is_owner, response, possible_access_token) = check_party_exists_and_user_is_owner_method(&user_id, req.app_data::<Data<ApplicationData>>()).await;
+    let (is_owner, response, possible_access_token, _possible_party_id) = check_party_exists_and_user_is_owner_method(&user_id, req.app_data::<Data<ApplicationData>>()).await;
     if !is_owner {
         return (response, None); // if not the owenr send the corresponding response
     }
