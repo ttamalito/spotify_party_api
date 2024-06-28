@@ -53,6 +53,8 @@ async fn main() -> std::io::Result<()> {
             .service(user_has_party) // check if the user has a party
             .service(turn_on_shuffle)
             .service(options_shuffleOn) // options request from the browser
+            .service(turn_off_shuffle)
+            .service(options_shuffleOff)
             .route("/hey", web::get().to(dummy))
     })
     .workers(4)

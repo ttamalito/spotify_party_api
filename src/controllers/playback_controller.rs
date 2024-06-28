@@ -223,7 +223,7 @@ async fn turn_on_shuffle(req: HttpRequest) -> impl Responder {
     HttpResponse::BadRequest().finish()
 } // end of shuffleOn
 
-
+/// Controller to turn the shuffle mode off
 #[put("/shuffleOff")]
 async fn turn_off_shuffle(req: HttpRequest) -> impl Responder {
     let req_clone = req.clone();
