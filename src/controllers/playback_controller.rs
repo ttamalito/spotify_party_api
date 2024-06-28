@@ -196,6 +196,7 @@ async fn modify_volume(req: HttpRequest) -> impl Responder {
     HttpResponse::BadRequest().finish()
 }
 
+/// Controller to turn on the shuffle mode
 #[put("/shuffleOn")]
 async fn turn_on_shuffle(req: HttpRequest) -> impl Responder {
     let req_clone = req.clone();
@@ -221,6 +222,33 @@ async fn turn_on_shuffle(req: HttpRequest) -> impl Responder {
 
     HttpResponse::BadRequest().finish()
 } // end of shuffleOn
+
+
+#[put("/shuffleOff")]
+async fn turn_off_shuffle(req: HttpRequest) -> impl Responder {
+    let req_clone = req.clone();
+    let (response, possible_auth_header) = intial_checkup(req).await;
+    if possible_auth_header.is_none() {
+        return response;
+    }
+
+    let auth_header = possible_auth_header.unwrap();
+    let auth_header = auth_header.as_str();
+    let url = "https://api.spotify.com/v1/me/player/shuffle?state=false";
+
+    // send the request
+    let response_result = put_request_emtpy_body(auth_header, url).await;
+    if response_result.0 {
+        return HttpResponse::NoContent().finish();
+    } else if response_result.1 == StatusCode::UNAUTHORIZED {
+        println!("{}", "You need to refresh your token");
+        let (_result, response_to_send) =
+            refresh_and_send_empty_put_request(req_clone, auth_header, url).await;
+        return response_to_send;
+    }
+
+    HttpResponse::BadRequest().finish()
+} // end of shuffleOff
 
 
 
