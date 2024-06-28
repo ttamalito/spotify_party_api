@@ -1,7 +1,7 @@
 use actix_web::{
-    get, post,
+    get, post, put,
     web::{self, Data},
-    HttpRequest, HttpResponse, Responder,
+    HttpRequest, HttpResponse, Responder, ResponseError,
 };
 use awc::http::StatusCode;
 use serde::{Deserialize, Serialize};
@@ -59,8 +59,7 @@ async fn pause_playback(req: HttpRequest, _form: web::Form<PausePlaybackForm>) -
     let auth_header = possible_auth_header.unwrap();
     let auth_header = auth_header.as_str();
     let url = "https://api.spotify.com/v1/me/player/pause";
-    let response_result =
-        put_request_emtpy_body(auth_header,url).await;
+    let response_result = put_request_emtpy_body(auth_header, url).await;
     if response_result.0 {
         return HttpResponse::NoContent().finish();
     } else if response_result.1 == StatusCode::UNAUTHORIZED {
@@ -87,8 +86,7 @@ async fn resume_playback(req: HttpRequest) -> impl Responder {
     let auth_header = possible_auth_header.unwrap();
     let auth_header = auth_header.as_str();
     let url = "https://api.spotify.com/v1/me/player/play";
-    let response_result =
-        put_request_emtpy_body(auth_header, url).await;
+    let response_result = put_request_emtpy_body(auth_header, url).await;
 
     if response_result.0 {
         // all good
@@ -185,11 +183,7 @@ async fn modify_volume(req: HttpRequest) -> impl Responder {
     let auth_header = auth_header.as_str();
     let url = "https://api.spotify.com/v1/me/player/volume?volume_percent=2";
     // send the request to the api
-    let response_result = put_request_emtpy_body(
-        auth_header,
-        url,
-    )
-    .await;
+    let response_result = put_request_emtpy_body(auth_header, url).await;
     if response_result.0 {
         return HttpResponse::NoContent().finish();
     } else if response_result.1 == StatusCode::UNAUTHORIZED {
@@ -201,3 +195,34 @@ async fn modify_volume(req: HttpRequest) -> impl Responder {
 
     HttpResponse::BadRequest().finish()
 }
+
+#[put("/shuffleOn")]
+async fn turn_on_shuffle(req: HttpRequest) -> impl Responder {
+    let req_clone = req.clone();
+    let (response, possible_auth_header) = intial_checkup(req).await;
+    if possible_auth_header.is_none() {
+        return response;
+    }
+
+    let auth_header = possible_auth_header.unwrap();
+    let auth_header = auth_header.as_str();
+    let url = "https://api.spotify.com/v1/me/player/shuffle?state=true";
+
+    // send the request
+    let response_result = put_request_emtpy_body(auth_header, url).await;
+    if response_result.0 {
+        return HttpResponse::NoContent().finish();
+    } else if response_result.1 == StatusCode::UNAUTHORIZED {
+        println!("{}", "You need to refresh your token");
+        let (_result, response_to_send) =
+            refresh_and_send_empty_put_request(req_clone, auth_header, url).await;
+        return response_to_send;
+    }
+
+    HttpResponse::BadRequest().finish()
+} // end of shuffleOn
+
+
+
+
+
