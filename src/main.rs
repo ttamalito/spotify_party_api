@@ -11,6 +11,7 @@ use controllers::base_controller::{hello};
 use controllers::base_controller::*;
 use controllers::auth_controller::*;
 use controllers::party_controller::*;
+use controllers::options_controller::*;
 use controllers::playback_controller::*;
 use application_data::ApplicationData;
 
@@ -32,6 +33,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(middleware::DefaultHeaders::new().add(("Access-Control-Allow-Origin", "http://localhost:3000"))) // add a middleware to add the default header
             .wrap(middleware::DefaultHeaders::new().add(("Access-Control-Allow-Credentials", "true")))
+            .wrap(middleware::DefaultHeaders::new().add(("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT"))) // add a middleware to add the default header
             .app_data(data.clone())
             .service(hello)
             .service(foo)
@@ -49,6 +51,8 @@ async fn main() -> std::io::Result<()> {
             .service(join_party) // GET route to join a party
             .service(acceptIntoParty) // accept a user into a party
             .service(user_has_party) // check if the user has a party
+            .service(turn_on_shuffle)
+            .service(options_shuffleOn) // options request from the browser
             .route("/hey", web::get().to(dummy))
     })
     .workers(4)
