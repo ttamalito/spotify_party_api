@@ -6,10 +6,15 @@ use crate::models::party_model::*;
 use crate::application_data::*;
 
 /// Checks if a given user owns a party
+/// Returns a tuple with the following values:
+/// - A boolean indicating whether the user owns a party or not.
+/// - An HttpResponse with the appropriate status code and message.
+/// - An optional string containing the access token if the user owns a party.
+/// - An optional string containing the party id if the user owns a party.
 pub async fn check_party_exists_and_user_is_owner_method(
     user_id: &str,
     app_data: Option<&Data<ApplicationData>>,
-) -> (bool, HttpResponse, Option<String>) {
+) -> (bool, HttpResponse, Option<String>, Option<String>) {
     // check that the user owns the party and that the party exists
     //let user_id = ObjectId::parse_str(user_id).expect("Should parse object id");
     let possible_user_id = convert_to_object_id(user_id);
@@ -24,6 +29,7 @@ pub async fn check_party_exists_and_user_is_owner_method(
                 String::from("Could not convert user id into object id"),
             )),
             None,
+            None
         );
     }
 
@@ -42,12 +48,14 @@ pub async fn check_party_exists_and_user_is_owner_method(
                 String::from("User does not own a party"),
             )),
             None,
+            None
         );
     }
-    // get the authorization token from the party
+    // get the data from the party
     let party = party.unwrap();
     let access_token = party.get_access_token();
+    let party_id = party._id.to_hex();
 
     // all gucci,
-    (true, HttpResponse::ImATeapot().finish(), Some(access_token))
+    (true, HttpResponse::ImATeapot().finish(), Some(access_token), Some(party_id))
 }
