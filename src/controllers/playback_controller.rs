@@ -251,6 +251,32 @@ async fn turn_off_shuffle(req: HttpRequest) -> impl Responder {
 } // end of shuffleOff
 
 
+#[get("/getPlaybackState")]
+async fn get_playback_state(req: HttpRequest) -> impl Responder {
+    let req_clone = req.clone();
+    let (response, possible_auth_header) = intial_checkup(req).await;
+    if possible_auth_header.is_none() {
+        return response;
+    }
+
+    let auth_header = possible_auth_header.unwrap();
+    let auth_header = auth_header.as_str();
+    let url = "https://api.spotify.com/v1/me/player";
+    let response_result = post_request_emtpy_body(auth_header, url).await;
+    if response_result.0 {
+        return HttpResponse::NoContent().finish();
+    } else if response_result.1 == StatusCode::UNAUTHORIZED {
+        println!("{}", "You need to refresh your token");
+        let (_result, response_to_send) =
+            refresh_and_send_post_empty_body(req_clone, auth_header, url).await;
+        return response_to_send;
+    }
+
+    HttpResponse::BadRequest().finish()
+        
+    
+} // end of get_playback_state
+
 
 
 
