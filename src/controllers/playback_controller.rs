@@ -21,7 +21,8 @@ use crate::utils::requests_to_api::post_request_empty::post_request_emtpy_body;
 use crate::utils::requests_to_api::put_request_empty::put_request_emtpy_body;
 use crate::utils::requests_to_api::refresh_post_empty_body::refresh_and_send_post_empty_body;
 use crate::utils::requests_to_api::refresh_put_request_empty::refresh_and_send_empty_put_request;
-
+use crate::utils::requests_to_api::get_request::get_request_get_play_back_state;
+use crate::utils::requests_to_api::refresh_and_send_get_playback_state::refresh_and_send_get_playback_state;
 // struct for pausePlayback
 #[derive(Deserialize, Serialize)]
 struct PausePlaybackForm {
@@ -262,14 +263,34 @@ async fn get_playback_state(req: HttpRequest) -> impl Responder {
     let auth_header = possible_auth_header.unwrap();
     let auth_header = auth_header.as_str();
     let url = "https://api.spotify.com/v1/me/player";
-    let response_result = post_request_emtpy_body(auth_header, url).await;
-    if response_result.0 {
+    let response_result = get_request_get_play_back_state(auth_header, url).await;
+    if response_result.1 == StatusCode::OK {
+        // return the data
+        if response_result.2.is_some() {
+            let response = response_result.2.unwrap();
+            return HttpResponse::Ok().json(response);
+        } else {
+            let response = response_result.3.unwrap();
+            return HttpResponse::Ok().json(response);
+        }
+    } else if response_result.1 == StatusCode::NO_CONTENT {
         return HttpResponse::NoContent().finish();
     } else if response_result.1 == StatusCode::UNAUTHORIZED {
         println!("{}", "You need to refresh your token");
-        let (_result, response_to_send) =
-            refresh_and_send_post_empty_body(req_clone, auth_header, url).await;
-        return response_to_send;
+        let (result, status, trackData, episodeData) =
+            refresh_and_send_get_playback_state(req_clone, auth_header, url).await;
+        if result {
+            if trackData.is_some() {
+                return HttpResponse::Ok().json(trackData.unwrap());
+            } else if episodeData.is_some() {
+                return HttpResponse::Ok().json(episodeData.unwrap());
+            } else {
+                // NO data
+                return HttpResponse::NoContent().finish();
+            }
+        }
+        // else send a bad request
+        return HttpResponse::BadRequest().finish();
     }
 
     HttpResponse::BadRequest().finish()
