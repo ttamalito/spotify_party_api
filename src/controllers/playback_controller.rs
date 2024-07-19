@@ -277,13 +277,13 @@ async fn get_playback_state(req: HttpRequest) -> impl Responder {
         return HttpResponse::NoContent().finish();
     } else if response_result.1 == StatusCode::UNAUTHORIZED {
         println!("{}", "You need to refresh your token");
-        let (result, status, trackData, episodeData) =
+        let (result, status, track_data, episode_data) =
             refresh_and_send_get_playback_state(req_clone, auth_header, url).await;
         if result {
-            if trackData.is_some() {
-                return HttpResponse::Ok().json(trackData.unwrap());
-            } else if episodeData.is_some() {
-                return HttpResponse::Ok().json(episodeData.unwrap());
+            if track_data.is_some() {
+                return HttpResponse::Ok().json(track_data.unwrap());
+            } else if episode_data.is_some() {
+                return HttpResponse::Ok().json(episode_data.unwrap());
             } else {
                 // NO data
                 return HttpResponse::NoContent().finish();
