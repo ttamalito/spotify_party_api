@@ -6,9 +6,9 @@ use openssl::ssl::{SslConnector, SslMethod};
 
 use super::errors_spotify::*;
 use std::time::Duration;
-use crate::utils::structs_to_serialize_deserialize::{ResponsePlaybackStateTrack, ResponsePlaybackStateEpisode, MainResponsePlaybackStateTrackObjectItem};
+use crate::utils::structs_to_serialize_deserialize::{MainResponsePlaybackStateEpisodeObjectItem, MainResponsePlaybackStateTrackObjectItem};
 
-pub async fn get_request_get_play_back_state(auth_header: &str, url: &str) -> (bool, StatusCode, Option<MainResponsePlaybackStateTrackObjectItem>, Option<ResponsePlaybackStateEpisode>) {
+pub async fn get_request_get_play_back_state(auth_header: &str, url: &str) -> (bool, StatusCode, Option<MainResponsePlaybackStateTrackObjectItem>, Option<MainResponsePlaybackStateEpisodeObjectItem>) {
     // send the request to the api
     let builder = SslConnector::builder(SslMethod::tls()).unwrap();
 
@@ -42,16 +42,18 @@ pub async fn get_request_get_play_back_state(auth_header: &str, url: &str) -> (b
     
         // if this could not be deserialized, try to deserialize it as an episode
         if state.is_err() {
-            let state = response
-                .json::<ResponsePlaybackStateEpisode>()
+            let state_episode = response
+                .json::<MainResponsePlaybackStateEpisodeObjectItem>()
                 .await;
-            if state.is_err() {
+            if state_episode.is_err() {
                 // throw an errors
-                panic!("Could not deserialize response from GET REquest");
+                //panic!("Could not deserialize response from GET REquest");
+                println!("{}", String::from("User current playback state is a podcast, it is not supported at the moment"));
+                return (false, response.status(), None, None);
             } // else it is an epidose
             else {
-                let state = state.unwrap();
-                return (true, response.status(), None, Some(state));
+                let state_episode = state_episode.unwrap();
+                return (true, response.status(), None, Some(state_episode));
             }
         } else {
             // it is a track

@@ -55,6 +55,7 @@ async fn main() -> std::io::Result<()> {
             .service(options_shuffleOn) // options request from the browser
             .service(turn_off_shuffle)
             .service(options_shuffleOff)
+            .service(get_playback_state)
             .route("/hey", web::get().to(dummy))
     })
     .workers(4)

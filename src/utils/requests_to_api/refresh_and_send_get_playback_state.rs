@@ -3,9 +3,9 @@ use crate::utils::refresh_token::refresh_token;
 use super::post_request_empty::post_request_emtpy_body;
 use super::get_request::get_request_get_play_back_state;
 use awc::http::StatusCode;
-use crate::utils::structs_to_serialize_deserialize::{ResponsePlaybackStateTrack, ResponsePlaybackStateEpisode, MainResponsePlaybackStateTrackObjectItem};
+use crate::utils::structs_to_serialize_deserialize::{MainResponsePlaybackStateEpisodeObjectItem, MainResponsePlaybackStateTrackObjectItem};
 /// refreshes a token and sends a post request with empty body to the given url
-pub async fn refresh_and_send_get_playback_state(req: HttpRequest, auth_header: &str, url: &str) -> (bool, StatusCode, Option<MainResponsePlaybackStateTrackObjectItem>, Option<ResponsePlaybackStateEpisode>) {
+pub async fn refresh_and_send_get_playback_state(req: HttpRequest, auth_header: &str, url: &str) -> (bool, StatusCode, Option<MainResponsePlaybackStateTrackObjectItem>, Option<MainResponsePlaybackStateEpisodeObjectItem>) {
     
     // try to refresh the token
     let refreshed = refresh_token(req).await;
