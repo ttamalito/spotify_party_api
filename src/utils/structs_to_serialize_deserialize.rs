@@ -52,6 +52,7 @@ pub struct Device {
     is_private_session: bool,
     is_restricted: bool,
     name: String,
+    #[serde(rename = "type")]
     type_: String,
     volume_percent: Option<i32>
 }
@@ -86,8 +87,9 @@ pub struct TrackObject {
     external_urls: ExternalURLs,
     href: String,
     id: String,
-    is_playable: bool,
+    is_playable: Option<bool>,
     linked_from: Option<LinkedFrom>,
+    #[serde(default)]
     restrictions: Restrictions,
     name: String,
     popularity: i32,
@@ -128,6 +130,7 @@ pub struct Album {
     name: String,
     release_date: String,
     release_date_precision: String,
+    #[serde(default)]
     restrictions: Restrictions,
     #[serde(rename = "type")]
     album_type_fixed: String, // this will alway be "album"
@@ -151,7 +154,9 @@ pub struct Artist {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ExternalIDs {
     isrc: String,
+    #[serde(default)]
     ean: String,
+    #[serde(default)]
     upc: String
 }
 
@@ -170,7 +175,7 @@ pub struct LinkedFrom {
 }
 
 /// Restrictions Object inside the Album and TrackObject
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Restrictions {
     reason: String
 }
@@ -199,6 +204,7 @@ pub struct EpisodeObject {
     #[serde(rename = "type")]
     type_fixed: String,
     uri: String,
+    #[serde(default)]
     restrictions: Restrictions,
     show: Show
 }

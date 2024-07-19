@@ -33,6 +33,9 @@ pub async fn post_request_emtpy_body(auth_header: &str, url: &str) -> (bool, Sta
                 // all good
                 return (true, response.status());
             }
+            if response.status() == StatusCode::OK {
+                return (true, response.status());
+            }
 
                 
     //let payload = response.json::<serde_json::Value>().await.expect("What ever");

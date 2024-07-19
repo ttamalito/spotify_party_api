@@ -6,9 +6,9 @@ use openssl::ssl::{SslConnector, SslMethod};
 
 use super::errors_spotify::*;
 use std::time::Duration;
-use crate::utils::structs_to_serialize_deserialize::{ResponsePlaybackStateTrack, ResponsePlaybackStateEpisode};
+use crate::utils::structs_to_serialize_deserialize::{ResponsePlaybackStateTrack, ResponsePlaybackStateEpisode, MainResponsePlaybackStateTrackObjectItem};
 
-pub async fn get_request_get_play_back_state(auth_header: &str, url: &str) -> (bool, StatusCode, Option<ResponsePlaybackStateTrack>, Option<ResponsePlaybackStateEpisode>) {
+pub async fn get_request_get_play_back_state(auth_header: &str, url: &str) -> (bool, StatusCode, Option<MainResponsePlaybackStateTrackObjectItem>, Option<ResponsePlaybackStateEpisode>) {
     // send the request to the api
     let builder = SslConnector::builder(SslMethod::tls()).unwrap();
 
@@ -37,8 +37,9 @@ pub async fn get_request_get_play_back_state(auth_header: &str, url: &str) -> (b
     // if the response is 200, deserialize it
     if response.status() == StatusCode::OK {
         let state = response
-            .json::<ResponsePlaybackStateTrack>()
+            .json::<MainResponsePlaybackStateTrackObjectItem>()
             .await;
+    
         // if this could not be deserialized, try to deserialize it as an episode
         if state.is_err() {
             let state = response

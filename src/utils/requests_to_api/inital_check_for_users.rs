@@ -24,7 +24,7 @@ pub async fn intial_checkup(req: HttpRequest) -> (HttpResponse, Option<String>) 
 
     // get the authorization header
     let (exists_token, auth_header) = get_authorization_header(req.headers(), possible_access_token);
-    println!("There is a token: {} line 27 initial_check_for_users.rs", exists_token);
+  
     if !exists_token {
         // there is no token
         return (HttpResponse::Unauthorized().
