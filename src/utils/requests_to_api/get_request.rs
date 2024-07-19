@@ -8,7 +8,7 @@ use super::errors_spotify::*;
 use std::time::Duration;
 use crate::utils::structs_to_serialize_deserialize::{ResponsePlaybackStateTrack, ResponsePlaybackStateEpisode};
 
-pub async fn get_request_get_play_back_state<T>(auth_header: &str, url: &str) -> (bool, StatusCode, Option<ResponsePlaybackStateTrack>, Option<ResponsePlaybackStateEpisode>) {
+pub async fn get_request_get_play_back_state(auth_header: &str, url: &str) -> (bool, StatusCode, Option<ResponsePlaybackStateTrack>, Option<ResponsePlaybackStateEpisode>) {
     // send the request to the api
     let builder = SslConnector::builder(SslMethod::tls()).unwrap();
 

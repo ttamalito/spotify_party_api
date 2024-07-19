@@ -5,7 +5,7 @@ use super::post_request_empty::post_request_emtpy_body;
 
 /// refreshes a token and sends a post request with empty body to the given url
 pub async fn refresh_and_send_post_empty_body(req: HttpRequest, auth_header: &str, url: &str) -> (bool, HttpResponse) {
-    println!("You need to refresh your token");
+    
     // try to refresh the token
     let refreshed = refresh_token(req).await;
     if refreshed {
